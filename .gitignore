@@ -1,0 +1,13 @@
+node_modules
+# IDE 配置文件夹
+# JetBrains IDEA 系列 (IntelliJ, WebStorm, PyCharm, PHPStorm, RubyMine, CLion等)
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# IntelliJ IDEA 工作区配置
+out/
+
+# VSCode 配置
+.vscode/
