@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.pomodorostudy.mapper.RoomMemberMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.example.pomodorostudy.entity.RoomMember">
+        <id column="id" property="id" />
+        <result column="user_id" property="userId" />
+        <result column="room_id" property="roomId" />
+        <result column="join_time" property="joinTime" />
+        <result column="leave_time" property="leaveTime" />
+        <result column="status" property="status" />
+        <result column="role" property="role" />
+        <result column="study_duration" property="studyDuration" />
+        <result column="last_active_time" property="lastActiveTime" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, user_id, room_id, join_time, leave_time, status, role, study_duration, last_active_time, create_time, update_time
+    </sql>
+
+    <!-- 根据用户ID查询房间成员关系 -->
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM room_member
+        WHERE user_id = #{userId}
+        ORDER BY join_time DESC
+    </select>
+
+    <!-- 根据房间ID查询成员列表 -->
+    <select id="selectByRoomId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM room_member
+        WHERE room_id = #{roomId}
+        ORDER BY join_time ASC
+    </select>
+
+    <!-- 查询在线成员 -->
+    <select id="selectOnlineMembers" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM room_member
+        WHERE room_id = #{roomId}
+        AND status = 1
+        ORDER BY last_active_time DESC
+    </select>
+
+    <!-- 查询房间管理员 -->
+    <select id="selectRoomAdmins" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM room_member
+        WHERE room_id = #{roomId}
+        AND role IN (1, 2)
+        ORDER BY join_time ASC
+    </select>
+
+    <!-- 查询用户是否在房间中 -->
+    <select id="checkUserInRoom" resultType="java.lang.Boolean">
+        SELECT COUNT(*) > 0
+        FROM room_member
+        WHERE user_id = #{userId}
+        AND room_id = #{roomId}
+        AND status = 1
+    </select>
+
+    <!-- 查询用户当前所在房间 -->
+    <select id="selectUserCurrentRoom" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM room_member
+        WHERE user_id = #{userId}
+        AND status = 1
+        ORDER BY join_time DESC
+        LIMIT 1
+    </select>
+
+    <!-- 更新成员状态 -->
+    <update id="updateMemberStatus">
+        UPDATE room_member
+        SET status = #{status},
+            update_time = NOW()
+        WHERE user_id = #{userId}
+        AND room_id = #{roomId}
+    </update>
+
+    <!-- 更新最后活跃时间 -->
+    <update id="updateLastActiveTime">
+        UPDATE room_member
+        SET last_active_time = NOW(),
+            update_time = NOW()
+        WHERE user_id = #{userId}
+        AND room_id = #{roomId}
+    </update>
+
+    <!-- 用户离开房间 -->
+    <update id="leaveRoom">
+        UPDATE room_member
+        SET status = 0,
+            leave_time = NOW(),
+            update_time = NOW()
+        WHERE user_id = #{userId}
+        AND room_id = #{roomId}
+    </update>
+
+    <!-- 更新成员角色 -->
+    <update id="updateMemberRole">
+        UPDATE room_member
+        SET role = #{role},
+            update_time = NOW()
+        WHERE user_id = #{userId}
+        AND room_id = #{roomId}
+    </update>
+
+    <!-- 增加学习时长 -->
+    <update id="addStudyDuration">
+        UPDATE room_member
+        SET study_duration = study_duration + #{duration},
+            update_time = NOW()
+        WHERE user_id = #{userId}
+        AND room_id = #{roomId}
+    </update>
+
+    <!-- 统计房间成员数 -->
+    <select id="countRoomMembers" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM room_member
+        WHERE room_id = #{roomId}
+        AND status = 1
+    </select>
+
+    <!-- 统计用户加入的房间数 -->
+    <select id="countUserRooms" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM room_member
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 查询房间学习时长排行榜 -->
+    <select id="selectRoomStudyRanking" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM room_member
+        WHERE room_id = #{roomId}
+        ORDER BY study_duration DESC, join_time ASC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询用户房间学习统计 -->
+    <select id="selectUserRoomStatistics" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as total_rooms,
+            SUM(study_duration) as total_study_time,
+            AVG(study_duration) as avg_study_time
+        FROM room_member
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 查询房间活跃度统计 -->
+    <select id="selectRoomActivityStats" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as total_members,
+            SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as online_members,
+            SUM(study_duration) as total_study_time,
+            AVG(study_duration) as avg_study_time
+        FROM room_member
+        WHERE room_id = #{roomId}
+    </select>
+
+    <!-- 查询用户最近加入的房间 -->
+    <select id="selectRecentJoinedRooms" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM room_member
+        WHERE user_id = #{userId}
+        ORDER BY join_time DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询长时间未活跃的成员 -->
+    <select id="selectInactiveMembers" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM room_member
+        WHERE room_id = #{roomId}
+        AND status = 1
+        AND last_active_time &lt; DATE_SUB(NOW(), INTERVAL #{hours} HOUR)
+        ORDER BY last_active_time ASC
+    </select>
+
+    <!-- 批量更新离线成员状态 -->
+    <update id="updateOfflineMembers">
+        UPDATE room_member
+        SET status = 2,
+            update_time = NOW()
+        WHERE room_id = #{roomId}
+        AND status = 1
+        AND last_active_time &lt; DATE_SUB(NOW(), INTERVAL #{hours} HOUR)
+    </update>
+
+</mapper>

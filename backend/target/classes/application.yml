@@ -1,0 +1,125 @@
+# 番茄自习室应用配置文件
+# 数据库：MySQL 8.0
+# 框架：Spring Boot 3.2.0 + MyBatis Plus
+
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-stacktrace: always
+
+spring:
+  application:
+    name: pomodoro-study
+  
+  # 数据源配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/pomodoro_study_db?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: EsTher-00080
+    
+    # 连接池配置
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 300000
+      connection-timeout: 20000
+      max-lifetime: 1200000
+  
+  # Jackson配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    default-property-inclusion: non_null
+  
+  # 静态资源配置
+  web:
+    resources:
+      static-locations: classpath:/static/
+  
+  # 环境配置
+  profiles:
+    active: dev
+  
+  # DevTools配置 - 开发环境热重载
+  devtools:
+    restart:
+      enabled: true
+      additional-paths: src/main/java,src/main/resources
+      exclude: static/**,public/**
+    livereload:
+      enabled: true
+      port: 35729
+    freemarker:
+      cache: false
+    thymeleaf:
+      cache: false
+
+# MyBatis Plus配置 - 简化配置避免兼容性问题
+mybatis-plus:
+  # XML扫描路径
+  mapper-locations: classpath:/mapper/*.xml
+  
+  # 实体扫描
+  type-aliases-package: com.example.pomodorostudy.entity
+  
+  # 全局配置
+  global-config:
+    db-config:
+      id-type: auto
+    banner: false
+  
+  # MyBatis原生配置
+  configuration:
+    map-underscore-to-camel-case: true
+    call-setters-on-nulls: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    cache-enabled: false
+
+# 日志配置
+logging:
+  level:
+    com.example.pomodorostudy: debug
+    com.example.pomodorostudy.mapper: debug
+    org.springframework: info
+    com.baomidou.mybatisplus: debug
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+
+---
+# 开发环境配置
+spring:
+  config:
+    activate:
+      on-profile: dev
+  
+  datasource:
+    url: jdbc:mysql://localhost:3306/pomodoro_study_db?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: EsTher-00080
+
+logging:
+  level:
+    root: info
+    com.example.pomodorostudy: debug
+
+---
+# 生产环境配置
+spring:
+  config:
+    activate:
+      on-profile: prod
+  
+  datasource:
+    url: jdbc:mysql://localhost:3306/pomodoro_study_db?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: EsTher-00080
+
+logging:
+  level:
+    root: warn
+    com.example.pomodorostudy: info
+  file:
+    name: logs/pomodoro-study.log

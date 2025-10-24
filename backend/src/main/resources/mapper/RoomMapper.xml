@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.pomodorostudy.mapper.RoomMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.example.pomodorostudy.entity.Room">
+        <id column="id" property="id" />
+        <result column="room_name" property="roomName" />
+        <result column="creator_id" property="creatorId" />
+        <result column="description" property="description" />
+        <result column="max_members" property="maxMembers" />
+        <result column="current_members" property="currentMembers" />
+        <result column="room_type" property="roomType" />
+        <result column="password" property="password" />
+        <result column="status" property="status" />
+        <result column="study_theme" property="studyTheme" />
+        <result column="background_music" property="backgroundMusic" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, room_name, creator_id, description, max_members, current_members, room_type, password, status, study_theme, background_music, create_time, update_time
+    </sql>
+
+    <!-- 根据创建者ID查询房间 -->
+    <select id="selectByCreatorId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM room
+        WHERE creator_id = #{creatorId}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 查询公开房间 -->
+    <select id="selectPublicRooms" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM room
+        WHERE room_type = 1
+        AND status = 1
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 查询可用房间（未满员） -->
+    <select id="selectAvailableRooms" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM room
+        WHERE status = 1
+        AND current_members &lt; max_members
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据房间名称模糊查询 -->
+    <select id="selectByRoomNameLike" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM room
+        WHERE room_name LIKE CONCAT('%', #{roomName}, '%')
+        AND status = 1
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据学习主题查询房间 -->
+    <select id="selectByStudyTheme" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM room
+        WHERE study_theme = #{studyTheme}
+        AND status = 1
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 查询热门房间（按成员数排序） -->
+    <select id="selectPopularRooms" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM room
+        WHERE status = 1
+        ORDER BY current_members DESC, create_time DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 更新房间成员数 -->
+    <update id="updateMemberCount">
+        UPDATE room
+        SET current_members = #{memberCount},
+            update_time = NOW()
+        WHERE id = #{roomId}
+    </update>
+
+    <!-- 增加房间成员数 -->
+    <update id="incrementMemberCount">
+        UPDATE room
+        SET current_members = current_members + 1,
+            update_time = NOW()
+        WHERE id = #{roomId}
+    </update>
+
+    <!-- 减少房间成员数 -->
+    <update id="decrementMemberCount">
+        UPDATE room
+        SET current_members = GREATEST(current_members - 1, 0),
+            update_time = NOW()
+        WHERE id = #{roomId}
+    </update>
+
+    <!-- 更新房间状态 -->
+    <update id="updateRoomStatus">
+        UPDATE room
+        SET status = #{status},
+            update_time = NOW()
+        WHERE id = #{roomId}
+    </update>
+
+    <!-- 检查房间密码 -->
+    <select id="checkRoomPassword" resultType="java.lang.Boolean">
+        SELECT COUNT(*) > 0
+        FROM room
+        WHERE id = #{roomId}
+        AND password = #{password}
+    </select>
+
+    <!-- 统计房间总数 -->
+    <select id="countRooms" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM room
+        WHERE status = 1
+    </select>
+
+    <!-- 统计活跃房间数（有成员的房间） -->
+    <select id="countActiveRooms" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM room
+        WHERE status = 1
+        AND current_members > 0
+    </select>
+
+    <!-- 查询房间统计信息 -->
+    <select id="selectRoomStatistics" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as total_rooms,
+            SUM(current_members) as total_members,
+            AVG(current_members) as avg_members_per_room
+        FROM room
+        WHERE status = 1
+    </select>
+
+    <!-- 查询用户创建的房间数 -->
+    <select id="countRoomsByCreator" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM room
+        WHERE creator_id = #{creatorId}
+    </select>
+
+    <!-- 查询房间成员分布 -->
+    <select id="selectMemberDistribution" resultType="java.util.Map">
+        SELECT 
+            CASE 
+                WHEN current_members = 0 THEN 'empty'
+                WHEN current_members &lt; 5 THEN 'small'
+                WHEN current_members &lt; 10 THEN 'medium'
+                ELSE 'large'
+            END as room_size,
+            COUNT(*) as room_count
+        FROM room
+        WHERE status = 1
+        GROUP BY room_size
+    </select>
+
+</mapper>
