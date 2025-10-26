@@ -84,6 +84,15 @@ class PomodoroApp {
             });
         }
 
+        // 进度滑块交互
+        const progressSlider = document.getElementById('taskProgress');
+        const progressValue = document.getElementById('progressValue');
+        if (progressSlider && progressValue) {
+            progressSlider.addEventListener('input', (e) => {
+                progressValue.textContent = e.target.value + '%';
+            });
+        }
+
         const filterAll = document.getElementById('filterAll');
         if (filterAll) {
             filterAll.addEventListener('click', () => {
@@ -304,7 +313,20 @@ class PomodoroApp {
 
         // 如果切换到自习室页面，加载房间列表
         if (pageId === 'study-room') {
-            this.loadRooms();
+            this.loadAllRooms();
+            this.bindStudyRoomTabs();
+        }
+        
+        // 如果切换到个人中心页面，加载我的自习室
+        if (pageId === 'profile') {
+            this.loadMyRooms();
+            this.bindRoomTabs();
+        }
+        
+        // 如果切换到统计页面，加载统计数据
+        if (pageId === 'statistics') {
+            this.loadStatistics();
+            this.bindStatisticsEvents();
         }
     }
 
@@ -488,8 +510,10 @@ class PomodoroApp {
             plannedDuration: parseInt(formData.get('plannedDuration')),
             priority: parseInt(formData.get('priority')), // 转换为 Integer
             category: formData.get('category'),
-            userId: 1, // 默认用户ID (Long 类型)
-            status: 0 // 0-未开始 (Integer 类型)
+            status: parseInt(formData.get('status')), // 任务状态
+            progress: parseInt(formData.get('progress')), // 完成进度
+            deadline: formData.get('deadline'), // 截止日期
+            userId: 1 // 默认用户ID (Long 类型)
         };
 
         try {
@@ -501,8 +525,10 @@ class PomodoroApp {
             console.log('- plannedDuration:', taskData.plannedDuration, typeof taskData.plannedDuration);
             console.log('- priority:', taskData.priority, typeof taskData.priority);
             console.log('- category:', taskData.category);
+            console.log('- status:', taskData.status, typeof taskData.status);
+            console.log('- progress:', taskData.progress, typeof taskData.progress);
+            console.log('- deadline:', taskData.deadline);
             console.log('- userId:', taskData.userId, typeof taskData.userId);
-            console.log('- status:', taskData.status);
             console.log('========================');
             
             const response = await this.apiCall('/pomodoro_task/add', 'POST', taskData);
@@ -660,6 +686,11 @@ class PomodoroApp {
                     <button class="btn btn-primary" onclick="app.joinRoomById(${room.id})">
                         加入房间
                     </button>
+                    ${room.creatorId === 1 ? `
+                        <button class="btn btn-danger btn-small" onclick="app.deleteRoom(${room.id})" title="删除房间">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    ` : ''}
                 </div>
             </div>
         `).join('');
@@ -945,6 +976,605 @@ class PomodoroApp {
             console.error('离开房间失败:', error);
             this.showNotification('离开房间失败', 'error');
         }
+    }
+
+    async deleteRoom(roomId) {
+        if (!confirm('确定要删除这个房间吗？删除后无法恢复！')) {
+            return;
+        }
+
+        try {
+            const response = await this.apiCall(`/room/delete/${roomId}`, 'DELETE');
+            
+            if (response.code === 200) {
+                this.showNotification('房间删除成功', 'success');
+                // 更新所有相关列表
+                await this.updateRoomStatus();
+                
+                // 如果删除的是当前房间，清空当前房间信息
+                if (this.currentRoom && this.currentRoom.id === roomId) {
+                    this.currentRoom = null;
+                    this.roomMembers = [];
+                    this.isStudying = false;
+                }
+            } else {
+                this.showNotification('删除房间失败', 'error');
+            }
+        } catch (error) {
+            console.error('删除房间失败:', error);
+            this.showNotification('删除房间失败', 'error');
+        }
+    }
+
+    // 加载我的自习室
+    async loadMyRooms() {
+        try {
+            // 并行加载创建的房间和加入的房间
+            const [createdResponse, joinedResponse] = await Promise.all([
+                this.apiCall('/room/list?creatorId=1', 'GET'),
+                this.apiCall('/room_member/list?userId=1', 'GET')
+            ]);
+
+            if (createdResponse.code === 200) {
+                this.myCreatedRooms = createdResponse.data.records || [];
+                this.renderMyCreatedRooms();
+            }
+
+            if (joinedResponse.code === 200) {
+                this.myJoinedRooms = joinedResponse.data.records || [];
+                this.renderMyJoinedRooms();
+            }
+
+            // 如果两个请求都失败，显示错误
+            if (createdResponse.code !== 200 && joinedResponse.code !== 200) {
+                this.showNotification('加载我的自习室失败', 'error');
+            }
+        } catch (error) {
+            console.error('加载我的自习室失败:', error);
+            this.showNotification('加载我的自习室失败', 'error');
+        }
+    }
+
+    // 渲染我创建的房间
+    renderMyCreatedRooms() {
+        const myCreatedRoomsList = document.getElementById('my-created-rooms-list');
+        if (!myCreatedRoomsList) return;
+
+        if (this.myCreatedRooms.length === 0) {
+            myCreatedRoomsList.innerHTML = '<div class="no-rooms">暂无创建的房间</div>';
+            return;
+        }
+
+        myCreatedRoomsList.innerHTML = this.myCreatedRooms.map(room => `
+            <div class="my-room-card">
+                <div class="my-room-header">
+                    <div class="my-room-name">${room.roomName}</div>
+                    <div class="my-room-role">房主</div>
+                </div>
+                <div class="my-room-stats">
+                    <span>成员: ${room.currentMembers || 0}/${room.maxMembers || 0}</span>
+                    <span>主题: ${room.studyTheme || '无'}</span>
+                    <span class="room-status ${this.getRoomStatusClass(room)}">${this.getRoomStatusText(room)}</span>
+                </div>
+                <div class="my-room-actions">
+                    <button class="btn btn-primary btn-small" onclick="app.joinRoomById(${room.id})">
+                        进入房间
+                    </button>
+                    <button class="btn btn-danger btn-small" onclick="app.deleteRoom(${room.id})">
+                        删除房间
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // 渲染我加入的房间
+    renderMyJoinedRooms() {
+        const myJoinedRoomsList = document.getElementById('my-joined-rooms-list');
+        if (!myJoinedRoomsList) return;
+
+        if (this.myJoinedRooms.length === 0) {
+            myJoinedRoomsList.innerHTML = '<div class="no-rooms">暂无加入的房间</div>';
+            return;
+        }
+
+        myJoinedRoomsList.innerHTML = this.myJoinedRooms.map(roomMember => `
+            <div class="my-room-card">
+                <div class="my-room-header">
+                    <div class="my-room-name">${roomMember.roomName || '未知房间'}</div>
+                    <div class="my-room-role">成员</div>
+                </div>
+                <div class="my-room-stats">
+                    <span>成员: ${roomMember.currentMembers || 0}/${roomMember.maxMembers || 0}</span>
+                    <span>主题: ${roomMember.studyTheme || '无'}</span>
+                    <span class="room-status ${this.getRoomStatusClass(roomMember)}">${this.getRoomStatusText(roomMember)}</span>
+                </div>
+                <div class="my-room-actions">
+                    <button class="btn btn-primary btn-small" onclick="app.joinRoomById(${roomMember.roomId})">
+                        进入房间
+                    </button>
+                    <button class="btn btn-outline btn-small" onclick="app.leaveMyRoom(${roomMember.roomId})">
+                        退出房间
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // 绑定房间标签页
+    bindRoomTabs() {
+        const createdTab = document.getElementById('myCreatedRoomsTab');
+        const joinedTab = document.getElementById('myJoinedRoomsTab');
+        const createdCategory = document.getElementById('my-created-rooms');
+        const joinedCategory = document.getElementById('my-joined-rooms');
+
+        if (createdTab && joinedTab) {
+            createdTab.addEventListener('click', () => {
+                this.switchRoomTab('created');
+            });
+
+            joinedTab.addEventListener('click', () => {
+                this.switchRoomTab('joined');
+            });
+        }
+    }
+
+    // 切换房间标签页
+    switchRoomTab(tab) {
+        const createdTab = document.getElementById('myCreatedRoomsTab');
+        const joinedTab = document.getElementById('myJoinedRoomsTab');
+        const createdCategory = document.getElementById('my-created-rooms');
+        const joinedCategory = document.getElementById('my-joined-rooms');
+
+        // 更新标签页状态
+        if (tab === 'created') {
+            createdTab.classList.add('active');
+            joinedTab.classList.remove('active');
+            createdCategory.classList.add('active');
+            joinedCategory.classList.remove('active');
+        } else {
+            createdTab.classList.remove('active');
+            joinedTab.classList.add('active');
+            createdCategory.classList.remove('active');
+            joinedCategory.classList.add('active');
+        }
+    }
+
+    // 获取房间状态类名
+    getRoomStatusClass(room) {
+        if (room.status === 0) return 'inactive';
+        if (room.currentMembers >= room.maxMembers) return 'full';
+        return 'active';
+    }
+
+    // 获取房间状态文本
+    getRoomStatusText(room) {
+        if (room.status === 0) return '已关闭';
+        if (room.currentMembers >= room.maxMembers) return '已满员';
+        return '开放中';
+    }
+
+    // 获取房间类型类名
+    getRoomTypeClass(roomType) {
+        switch(roomType) {
+            case 0: return 'public';
+            case 1: return 'private';
+            default: return 'public';
+        }
+    }
+
+    // 获取房间类型文本
+    getRoomTypeText(roomType) {
+        switch(roomType) {
+            case 0: return '公开';
+            case 1: return '私密';
+            default: return '公开';
+        }
+    }
+
+    // 退出我的自习室
+    async leaveMyRoom(roomId) {
+        if (!confirm('确定要退出这个自习室吗？')) {
+            return;
+        }
+
+        try {
+            const response = await this.apiCall('/room/leave', 'POST', {
+                roomId: roomId,
+                userId: 1
+            });
+
+            if (response.code === 200) {
+                this.showNotification('已退出自习室', 'success');
+                // 重新加载我的房间列表
+                this.loadMyRooms();
+                
+                // 如果退出的是当前房间，清空当前房间信息
+                if (this.currentRoom && this.currentRoom.id === roomId) {
+                    this.currentRoom = null;
+                    this.roomMembers = [];
+                    this.isStudying = false;
+                }
+            } else {
+                this.showNotification('退出自习室失败', 'error');
+            }
+        } catch (error) {
+            console.error('退出自习室失败:', error);
+            this.showNotification('退出自习室失败', 'error');
+        }
+    }
+
+    // 房间状态动态更新
+    async updateRoomStatus() {
+        try {
+            // 更新房间列表
+            await this.loadAllRooms();
+            
+            // 如果在个人中心页面，也更新我的房间
+            const profilePage = document.getElementById('profile-page');
+            if (profilePage && profilePage.classList.contains('active')) {
+                await this.loadMyRooms();
+            }
+        } catch (error) {
+            console.error('更新房间状态失败:', error);
+        }
+    }
+
+    // 加载所有房间（自习室页面）
+    async loadAllRooms() {
+        try {
+            // 并行加载所有房间、创建的房间和加入的房间
+            const [allResponse, createdResponse, joinedResponse] = await Promise.all([
+                this.apiCall('/room/list', 'GET'),
+                this.apiCall('/room/list?creatorId=1', 'GET'),
+                this.apiCall('/room_member/list?userId=1', 'GET')
+            ]);
+
+            if (allResponse.code === 200) {
+                this.allRooms = allResponse.data.records || [];
+                this.renderAllRooms();
+            }
+
+            if (createdResponse.code === 200) {
+                this.myCreatedRoomsStudy = createdResponse.data.records || [];
+                this.renderMyCreatedRoomsStudy();
+            }
+
+            if (joinedResponse.code === 200) {
+                this.myJoinedRoomsStudy = joinedResponse.data.records || [];
+                this.renderMyJoinedRoomsStudy();
+            }
+        } catch (error) {
+            console.error('加载房间列表失败:', error);
+            this.showNotification('加载房间列表失败', 'error');
+        }
+    }
+
+    // 渲染所有房间
+    renderAllRooms() {
+        const allRoomsList = document.getElementById('all-rooms-list');
+        if (!allRoomsList) return;
+
+        if (this.allRooms.length === 0) {
+            allRoomsList.innerHTML = '<div class="no-rooms">暂无可用房间</div>';
+            return;
+        }
+
+        allRoomsList.innerHTML = this.allRooms.map(room => `
+            <div class="room-card">
+                <div class="room-card-header">
+                    <div class="room-name">${room.roomName}</div>
+                    <div class="room-type ${this.getRoomTypeClass(room.roomType)}">
+                        ${this.getRoomTypeText(room.roomType)}
+                    </div>
+                </div>
+                <div class="room-description">${room.description || '暂无描述'}</div>
+                <div class="room-stats">
+                    <span>成员: ${room.currentMembers}/${room.maxMembers}</span>
+                    <span>主题: ${room.studyTheme || '无'}</span>
+                    <span class="room-status ${this.getRoomStatusClass(room)}">${this.getRoomStatusText(room)}</span>
+                </div>
+                <div class="room-actions">
+                    <button class="btn btn-primary" onclick="app.joinRoomById(${room.id})">
+                        加入房间
+                    </button>
+                    ${room.creatorId === 1 ? `
+                        <button class="btn btn-danger btn-small" onclick="app.deleteRoom(${room.id})" title="删除房间">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // 渲染我创建的房间（自习室页面）
+    renderMyCreatedRoomsStudy() {
+        const myCreatedRoomsList = document.getElementById('my-created-rooms-list-study');
+        if (!myCreatedRoomsList) return;
+
+        if (this.myCreatedRoomsStudy.length === 0) {
+            myCreatedRoomsList.innerHTML = '<div class="no-rooms">暂无创建的房间</div>';
+            return;
+        }
+
+        myCreatedRoomsList.innerHTML = this.myCreatedRoomsStudy.map(room => `
+            <div class="room-card">
+                <div class="room-card-header">
+                    <div class="room-name">${room.roomName}</div>
+                    <div class="room-type ${this.getRoomTypeClass(room.roomType)}">
+                        ${this.getRoomTypeText(room.roomType)}
+                    </div>
+                </div>
+                <div class="room-description">${room.description || '暂无描述'}</div>
+                <div class="room-stats">
+                    <span>成员: ${room.currentMembers}/${room.maxMembers}</span>
+                    <span>主题: ${room.studyTheme || '无'}</span>
+                    <span class="room-status ${this.getRoomStatusClass(room)}">${this.getRoomStatusText(room)}</span>
+                </div>
+                <div class="room-actions">
+                    <button class="btn btn-primary" onclick="app.joinRoomById(${room.id})">
+                        进入房间
+                    </button>
+                    <button class="btn btn-danger btn-small" onclick="app.deleteRoom(${room.id})" title="删除房间">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // 渲染我加入的房间（自习室页面）
+    renderMyJoinedRoomsStudy() {
+        const myJoinedRoomsList = document.getElementById('my-joined-rooms-list-study');
+        if (!myJoinedRoomsList) return;
+
+        if (this.myJoinedRoomsStudy.length === 0) {
+            myJoinedRoomsList.innerHTML = '<div class="no-rooms">暂无加入的房间</div>';
+            return;
+        }
+
+        myJoinedRoomsList.innerHTML = this.myJoinedRoomsStudy.map(roomMember => `
+            <div class="room-card">
+                <div class="room-card-header">
+                    <div class="room-name">${roomMember.roomName || '未知房间'}</div>
+                    <div class="room-type member">
+                        成员
+                    </div>
+                </div>
+                <div class="room-description">${roomMember.description || '暂无描述'}</div>
+                <div class="room-stats">
+                    <span>成员: ${roomMember.currentMembers || 0}/${roomMember.maxMembers || 0}</span>
+                    <span>主题: ${roomMember.studyTheme || '无'}</span>
+                    <span class="room-status ${this.getRoomStatusClass(roomMember)}">${this.getRoomStatusText(roomMember)}</span>
+                </div>
+                <div class="room-actions">
+                    <button class="btn btn-primary" onclick="app.joinRoomById(${roomMember.roomId})">
+                        进入房间
+                    </button>
+                    <button class="btn btn-outline btn-small" onclick="app.leaveMyRoom(${roomMember.roomId})" title="退出房间">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // 绑定自习室页面标签页
+    bindStudyRoomTabs() {
+        const allTab = document.getElementById('allRoomsTab');
+        const createdTab = document.getElementById('myCreatedRoomsTab');
+        const joinedTab = document.getElementById('myJoinedRoomsTab');
+
+        if (allTab && createdTab && joinedTab) {
+            allTab.addEventListener('click', () => {
+                this.switchStudyRoomTab('all');
+            });
+
+            createdTab.addEventListener('click', () => {
+                this.switchStudyRoomTab('created');
+            });
+
+            joinedTab.addEventListener('click', () => {
+                this.switchStudyRoomTab('joined');
+            });
+        }
+    }
+
+    // 切换自习室页面标签页
+    switchStudyRoomTab(tab) {
+        const allTab = document.getElementById('allRoomsTab');
+        const createdTab = document.getElementById('myCreatedRoomsTab');
+        const joinedTab = document.getElementById('myJoinedRoomsTab');
+        const allCategory = document.getElementById('all-rooms');
+        const createdCategory = document.getElementById('my-created-rooms-study');
+        const joinedCategory = document.getElementById('my-joined-rooms-study');
+
+        // 重置所有标签页
+        [allTab, createdTab, joinedTab].forEach(t => t.classList.remove('active'));
+        [allCategory, createdCategory, joinedCategory].forEach(c => c.classList.remove('active'));
+
+        // 激活选中的标签页
+        if (tab === 'all') {
+            allTab.classList.add('active');
+            allCategory.classList.add('active');
+        } else if (tab === 'created') {
+            createdTab.classList.add('active');
+            createdCategory.classList.add('active');
+        } else if (tab === 'joined') {
+            joinedTab.classList.add('active');
+            joinedCategory.classList.add('active');
+        }
+    }
+
+    // ==================== 学习统计功能 ====================
+
+    // 加载统计数据
+    loadStatistics() {
+        this.updateStatisticsOverview();
+        this.renderStudyChart();
+        this.renderTaskChart();
+        this.renderHabitChart();
+    }
+
+    // 绑定统计页面事件
+    bindStatisticsEvents() {
+        const generateBtn = document.getElementById('generateSampleDataBtn');
+        if (generateBtn) {
+            generateBtn.addEventListener('click', () => {
+                this.generateSampleData();
+            });
+        }
+    }
+
+    // 更新统计概览
+    updateStatisticsOverview() {
+        const totalStudyTime = localStorage.getItem('totalStudyTime') || 0;
+        const studyDays = localStorage.getItem('studyDays') || 0;
+        const completedTasks = localStorage.getItem('completedTasks') || 0;
+        const streakDays = localStorage.getItem('streakDays') || 0;
+
+        document.getElementById('total-study-time').textContent = totalStudyTime;
+        document.getElementById('study-days').textContent = studyDays;
+        document.getElementById('completed-tasks').textContent = completedTasks;
+        document.getElementById('streak-days').textContent = streakDays;
+    }
+
+    // 生成示例数据
+    generateSampleData() {
+        // 生成学习时长数据
+        const totalStudyTime = Math.floor(Math.random() * 2000) + 500; // 500-2500分钟
+        const studyDays = Math.floor(Math.random() * 30) + 10; // 10-40天
+        const completedTasks = Math.floor(Math.random() * 50) + 20; // 20-70个任务
+        const streakDays = Math.floor(Math.random() * 15) + 5; // 5-20天
+
+        // 保存到localStorage
+        localStorage.setItem('totalStudyTime', totalStudyTime);
+        localStorage.setItem('studyDays', studyDays);
+        localStorage.setItem('completedTasks', completedTasks);
+        localStorage.setItem('streakDays', streakDays);
+
+        // 更新显示
+        this.updateStatisticsOverview();
+        this.renderStudyChart();
+        this.renderTaskChart();
+        this.renderHabitChart();
+
+        this.showNotification('示例数据生成成功！', 'success');
+    }
+
+    // 渲染学习时长图表
+    renderStudyChart() {
+        const chartContainer = document.getElementById('study-chart');
+        if (!chartContainer) return;
+
+        const totalTime = parseInt(localStorage.getItem('totalStudyTime')) || 0;
+        const studyDays = parseInt(localStorage.getItem('studyDays')) || 0;
+        const avgTime = studyDays > 0 ? Math.round(totalTime / studyDays) : 0;
+
+        chartContainer.innerHTML = `
+            <div style="text-align: center; padding: 1rem; width: 100%;">
+                <div style="font-size: 2rem; color: var(--primary-color); margin-bottom: 0.5rem;">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h4 style="color: #333; margin-bottom: 0.75rem; font-size: 1rem;">学习时长分析</h4>
+                <div class="sample-data-item">
+                    <span class="sample-data-label">总学习时长</span>
+                    <span class="sample-data-value">${totalTime} 分钟</span>
+                </div>
+                <div class="sample-data-item">
+                    <span class="sample-data-label">学习天数</span>
+                    <span class="sample-data-value">${studyDays} 天</span>
+                </div>
+                <div class="sample-data-item">
+                    <span class="sample-data-label">平均每日</span>
+                    <span class="sample-data-value">${avgTime} 分钟</span>
+                </div>
+                <div class="sample-data-item">
+                    <span class="sample-data-label">学习效率</span>
+                    <span class="sample-data-value">${Math.min(100, Math.floor((totalTime / 100) * 10))}%</span>
+                </div>
+            </div>
+        `;
+    }
+
+    // 渲染任务完成图表
+    renderTaskChart() {
+        const chartContainer = document.getElementById('task-chart');
+        if (!chartContainer) return;
+
+        const completedTasks = parseInt(localStorage.getItem('completedTasks')) || 0;
+        const totalTasks = completedTasks + Math.floor(Math.random() * 20) + 5;
+        const completionRate = Math.round((completedTasks / totalTasks) * 100);
+
+        chartContainer.innerHTML = `
+            <div style="text-align: center; padding: 1rem; width: 100%;">
+                <div style="font-size: 2rem; color: #28a745; margin-bottom: 0.5rem;">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <h4 style="color: #333; margin-bottom: 0.75rem; font-size: 1rem;">任务完成情况</h4>
+                <div class="sample-data-item">
+                    <span class="sample-data-label">已完成任务</span>
+                    <span class="sample-data-value">${completedTasks} 个</span>
+                </div>
+                <div class="sample-data-item">
+                    <span class="sample-data-label">总任务数</span>
+                    <span class="sample-data-value">${totalTasks} 个</span>
+                </div>
+                <div class="sample-data-item">
+                    <span class="sample-data-label">完成率</span>
+                    <span class="sample-data-value">${completionRate}%</span>
+                </div>
+                <div class="sample-data-item">
+                    <span class="sample-data-label">平均每日</span>
+                    <span class="sample-data-value">${Math.round(completedTasks / 30)} 个</span>
+                </div>
+            </div>
+        `;
+    }
+
+    // 渲染学习习惯图表
+    renderHabitChart() {
+        const chartContainer = document.getElementById('habit-chart');
+        if (!chartContainer) return;
+
+        const studyDays = parseInt(localStorage.getItem('studyDays')) || 0;
+        const streakDays = parseInt(localStorage.getItem('streakDays')) || 0;
+        const consistency = studyDays > 0 ? Math.round((streakDays / studyDays) * 100) : 0;
+
+        // 生成学习时间段分布
+        const timeSlots = [
+            { period: '早晨 (6-9点)', percentage: Math.floor(Math.random() * 30) + 10 },
+            { period: '上午 (9-12点)', percentage: Math.floor(Math.random() * 40) + 20 },
+            { period: '下午 (14-17点)', percentage: Math.floor(Math.random() * 35) + 15 },
+            { period: '晚上 (19-22点)', percentage: Math.floor(Math.random() * 25) + 15 }
+        ];
+
+        chartContainer.innerHTML = `
+            <div style="text-align: center; padding: 1rem; width: 100%;">
+                <div style="font-size: 2rem; color: #ffc107; margin-bottom: 0.5rem;">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h4 style="color: #333; margin-bottom: 0.75rem; font-size: 1rem;">学习习惯分析</h4>
+                <div class="sample-data-item">
+                    <span class="sample-data-label">学习一致性</span>
+                    <span class="sample-data-value">${consistency}%</span>
+                </div>
+                <div class="sample-data-item">
+                    <span class="sample-data-label">最长连续</span>
+                    <span class="sample-data-value">${streakDays} 天</span>
+                </div>
+                <div style="margin-top: 0.5rem;">
+                    <h5 style="color: #333; margin-bottom: 0.4rem; font-size: 0.9rem;">学习时间段分布</h5>
+                    ${timeSlots.map(slot => `
+                        <div class="sample-data-item">
+                            <span class="sample-data-label">${slot.period}</span>
+                            <span class="sample-data-value">${slot.percentage}%</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
     }
 
     // ==================== 自定义文案功能 ====================

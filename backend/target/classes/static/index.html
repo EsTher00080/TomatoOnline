@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>番茄自习室 - Pomodoro Study Room</title>
-    <link rel="stylesheet" href="css/style.css">
+           <link rel="stylesheet" href="css/style.css?v=3.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -140,11 +140,36 @@
                     </button>
                 </div>
                 
-                <!-- 房间列表 -->
+                <!-- 房间分类标签页 -->
                 <div class="rooms-section">
-                    <h3>可用房间</h3>
-                    <div id="rooms-list" class="rooms-list">
-                        <!-- 房间列表将通过JavaScript动态生成 -->
+                    <div class="rooms-tabs">
+                        <button id="allRoomsTab" class="room-tab active" data-tab="all">全部房间</button>
+                        <button id="myCreatedRoomsTab" class="room-tab" data-tab="created">我创建的</button>
+                        <button id="myJoinedRoomsTab" class="room-tab" data-tab="joined">我加入的</button>
+                    </div>
+                    
+                    <!-- 全部房间 -->
+                    <div id="all-rooms" class="room-category active">
+                        <h3>全部房间</h3>
+                        <div id="all-rooms-list" class="rooms-list">
+                            <!-- 所有房间将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+                    
+                    <!-- 我创建的房间 -->
+                    <div id="my-created-rooms-study" class="room-category">
+                        <h3>我创建的房间</h3>
+                        <div id="my-created-rooms-list-study" class="rooms-list">
+                            <!-- 我创建的房间将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+                    
+                    <!-- 我加入的房间 -->
+                    <div id="my-joined-rooms-study" class="room-category">
+                        <h3>我加入的房间</h3>
+                        <div id="my-joined-rooms-list-study" class="rooms-list">
+                            <!-- 我加入的房间将通过JavaScript动态生成 -->
+                        </div>
                     </div>
                 </div>
                 
@@ -186,12 +211,74 @@
             <div id="statistics-page" class="page">
                 <div class="page-header">
                     <h2>学习统计</h2>
+                    <button id="generateSampleDataBtn" class="btn btn-outline">
+                        <i class="fas fa-database"></i> 生成示例数据
+                    </button>
                 </div>
+                
+                <!-- 统计概览 -->
+                <div class="stats-overview">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="total-study-time">0</div>
+                            <div class="stat-label">总学习时长(分钟)</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="study-days">0</div>
+                            <div class="stat-label">学习天数</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="completed-tasks">0</div>
+                            <div class="stat-label">完成任务数</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-fire"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="streak-days">0</div>
+                            <div class="stat-label">连续学习天数</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 图表区域 -->
                 <div class="stats-container">
+                    <!-- 学习时长统计 -->
                     <div class="chart-section">
                         <h3>学习时长统计</h3>
                         <div id="study-chart" class="chart-container">
                             <!-- 图表将通过JavaScript生成 -->
+                        </div>
+                    </div>
+                    
+                    <!-- 任务完成统计 -->
+                    <div class="chart-section">
+                        <h3>任务完成统计</h3>
+                        <div id="task-chart" class="chart-container">
+                            <!-- 任务统计图表 -->
+                        </div>
+                    </div>
+                    
+                    <!-- 学习习惯分析 -->
+                    <div class="chart-section">
+                        <h3>学习习惯分析</h3>
+                        <div id="habit-chart" class="chart-container">
+                            <!-- 学习习惯图表 -->
                         </div>
                     </div>
                 </div>
@@ -224,6 +311,30 @@
                         <div class="stat-item">
                             <span class="stat-label">连续学习天数</span>
                             <span class="stat-value" id="total-streak">0 天</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 我的自习室 -->
+                    <div class="my-rooms-section">
+                        <div class="rooms-tabs">
+                            <button id="myCreatedRoomsTab" class="room-tab active" data-tab="created">我创建的</button>
+                            <button id="myJoinedRoomsTab" class="room-tab" data-tab="joined">我加入的</button>
+                        </div>
+                        
+                        <!-- 我创建的房间 -->
+                        <div id="my-created-rooms" class="room-category active">
+                            <h4>我创建的房间</h4>
+                            <div id="my-created-rooms-list" class="my-rooms-list">
+                                <!-- 用户创建的房间将通过JavaScript动态生成 -->
+                            </div>
+                        </div>
+                        
+                        <!-- 我加入的房间 -->
+                        <div id="my-joined-rooms" class="room-category">
+                            <h4>我加入的房间</h4>
+                            <div id="my-joined-rooms-list" class="my-rooms-list">
+                                <!-- 用户加入的房间将通过JavaScript动态生成 -->
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -312,6 +423,24 @@
                         <div class="form-group">
                             <label for="taskCategory">分类</label>
                             <input type="text" id="taskCategory" name="category" placeholder="如：学习、工作、生活等">
+                        </div>
+                        <div class="form-group">
+                            <label for="taskStatus">任务状态</label>
+                            <select id="taskStatus" name="status">
+                                <option value="0" selected>未开始</option>
+                                <option value="1">进行中</option>
+                                <option value="2">已完成</option>
+                                <option value="3">已取消</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskProgress">完成进度 (%)</label>
+                            <input type="range" id="taskProgress" name="progress" min="0" max="100" value="0" class="progress-slider">
+                            <span id="progressValue">0%</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskDeadline">截止日期</label>
+                            <input type="datetime-local" id="taskDeadline" name="deadline">
                         </div>
                         <button type="submit" class="btn btn-primary btn-full">添加任务</button>
                     </form>
@@ -426,7 +555,7 @@
                    console.log('app 对象未定义');
                }
            </script>
-           <script src="js/app.js?v=4.0" onload="console.log('app.js 加载完成')" onerror="console.error('app.js 加载失败')"></script>
+           <script src="js/app.js?v=13.0" onload="console.log('app.js 加载完成')" onerror="console.error('app.js 加载失败')"></script>
            <script>
                console.log('app.js 加载后检查...');
                if (typeof app !== 'undefined') {

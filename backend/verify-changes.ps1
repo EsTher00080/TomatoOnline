@@ -76,3 +76,4 @@ Write-Host "4. 点击'登录'按钮提交表单" -ForegroundColor White
 Write-Host "5. 检查是否显示登录成功消息" -ForegroundColor White
 Write-Host "6. 点击'注册'按钮测试注册功能" -ForegroundColor White
 
+
