@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>番茄自习室 - Pomodoro Study Room</title>
-           <link rel="stylesheet" href="css/style.css?v=3.0">
+           <link rel="stylesheet" href="css/style.css?v=4.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -191,7 +191,7 @@
                         <button id="endStudyBtn" class="btn btn-secondary" disabled>
                             <i class="fas fa-stop"></i> 结束学习
                         </button>
-                        <button id="leaveRoomBtn" class="btn btn-outline">
+                        <button id="leaveCurrentRoomBtn" class="btn btn-outline">
                             <i class="fas fa-sign-out-alt"></i> 离开房间
                         </button>
                     </div>
@@ -205,6 +205,69 @@
                            </div>
                            
                        </div>
+            </div>
+
+            <!-- 房间仪表板页面 -->
+            <div id="room-dashboard-page" class="page">
+                <div class="page-header">
+                    <h2 id="room-dashboard-title">房间仪表板</h2>
+                    <button id="leaveRoomDashboardBtn" class="btn btn-outline">
+                        <i class="fas fa-sign-out-alt"></i> 离开房间
+                    </button>
+                </div>
+                
+                <!-- 房间信息 -->
+                <div class="room-info-section">
+                    <div class="room-info-card">
+                        <h3 id="room-name">房间名称</h3>
+                        <div class="room-meta">
+                            <span id="room-members-count">成员: 0/0</span>
+                            <span id="room-theme">主题: 无</span>
+                            <span id="room-status">状态: 开放中</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 功能区域 -->
+                <div class="room-dashboard-content">
+                    <!-- 排行榜 -->
+                    <div class="dashboard-section">
+                        <h3>学习排行榜</h3>
+                        <div id="ranking-list" class="ranking-list">
+                            <!-- 排行榜将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+
+                    <!-- 成就系统 -->
+                    <div class="dashboard-section">
+                        <h3>成就系统</h3>
+                        <div id="achievements-list" class="achievements-list">
+                            <!-- 成就将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+
+                    <!-- 倒计时器 -->
+                    <div class="dashboard-section">
+                        <h3>学习倒计时</h3>
+                        <div class="timer-section">
+                            <div class="timer-display">
+                                <div id="room-timer" class="timer">25:00</div>
+                                <div id="room-timer-status" class="timer-status">准备开始</div>
+                            </div>
+                            <div class="timer-controls">
+                                <button id="startRoomTimer" class="btn btn-primary">
+                                    <i class="fas fa-play"></i> 开始学习
+                                </button>
+                                <button id="pauseRoomTimer" class="btn btn-secondary" disabled>
+                                    <i class="fas fa-pause"></i> 暂停
+                                </button>
+                                <button id="resetRoomTimer" class="btn btn-outline">
+                                    <i class="fas fa-redo"></i> 重置
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- 学习统计页面 -->
@@ -555,7 +618,7 @@
                    console.log('app 对象未定义');
                }
            </script>
-           <script src="js/app.js?v=13.0" onload="console.log('app.js 加载完成')" onerror="console.error('app.js 加载失败')"></script>
+           <script src="js/app.js?v=18.0" onload="console.log('app.js 加载完成')" onerror="console.error('app.js 加载失败')"></script>
            <script>
                console.log('app.js 加载后检查...');
                if (typeof app !== 'undefined') {
@@ -564,5 +627,76 @@
                    console.log('app 对象仍然未定义');
                }
            </script>
+
+    <!-- 音乐播放器悬浮窗 -->
+    <div id="musicPlayer" class="music-player">
+        <div class="music-player-header">
+            <div class="music-player-title">
+                <i class="fas fa-music"></i>
+                <span>音乐播放器</span>
+            </div>
+            <div class="music-player-controls">
+                <button id="musicPlayerToggle" class="btn-icon" title="收缩/展开">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <button id="musicPlayerClose" class="btn-icon" title="关闭">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="music-player-content">
+            <div class="music-info">
+                <div class="music-cover">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div class="music-details">
+                    <div class="music-name" id="currentMusicName">选择音乐</div>
+                    <div class="music-artist" id="currentMusicArtist">未知艺术家</div>
+                </div>
+            </div>
+            
+            <div class="music-controls">
+                <button id="prevMusic" class="btn-icon" title="上一首">
+                    <i class="fas fa-step-backward"></i>
+                </button>
+                <button id="playPauseMusic" class="btn-icon btn-play" title="播放/暂停">
+                    <i class="fas fa-play"></i>
+                </button>
+                <button id="nextMusic" class="btn-icon" title="下一首">
+                    <i class="fas fa-step-forward"></i>
+                </button>
+            </div>
+            
+            <div class="music-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="musicProgressFill"></div>
+                </div>
+                <div class="time-display">
+                    <span id="currentTime">0:00</span>
+                    <span id="totalTime">0:00</span>
+                </div>
+            </div>
+            
+            <div class="music-volume">
+                <i class="fas fa-volume-down"></i>
+                <input type="range" id="volumeSlider" min="0" max="100" value="50" class="volume-slider">
+                <i class="fas fa-volume-up"></i>
+            </div>
+            
+            <div class="music-list">
+                <div class="music-list-header">
+                    <span>播放列表</span>
+                    <button id="toggleMusicList" class="btn-icon" title="展开/收起列表">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="music-list-content" id="musicListContent">
+                    <!-- 音乐列表将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
        </body>
        </html>

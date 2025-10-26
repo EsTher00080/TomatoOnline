@@ -38,3 +38,4 @@ INSERT INTO `user` (`username`, `password`, `email`, `avatar`, `signature`, `con
 SELECT * FROM user;
 
 
+

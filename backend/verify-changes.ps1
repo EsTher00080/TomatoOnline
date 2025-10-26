@@ -77,3 +77,4 @@ Write-Host "5. 检查是否显示登录成功消息" -ForegroundColor White
 Write-Host "6. 点击'注册'按钮测试注册功能" -ForegroundColor White
 
 
+

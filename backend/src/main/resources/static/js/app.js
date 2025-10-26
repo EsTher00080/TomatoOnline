@@ -31,6 +31,9 @@ class PomodoroApp {
         this.updateTimerDisplay();
         this.loadCustomTextOnInit();
         this.updateDashboardStats();
+        
+        // 初始化音乐播放器
+        this.initMusicPlayer();
     }
 
     bindEvents() {
@@ -159,9 +162,9 @@ class PomodoroApp {
             });
         }
 
-        const leaveRoomBtn = document.getElementById('leaveRoomBtn');
-        if (leaveRoomBtn) {
-            leaveRoomBtn.addEventListener('click', () => {
+        const leaveCurrentRoomBtn = document.getElementById('leaveCurrentRoomBtn');
+        if (leaveCurrentRoomBtn) {
+            leaveCurrentRoomBtn.addEventListener('click', () => {
                 this.leaveRoom();
             });
         }
@@ -968,6 +971,7 @@ class PomodoroApp {
                 this.roomMembers = [];
                 this.isStudying = false;
                 this.showNotification('已离开房间', 'info');
+                this.showPage('study-room');
                 this.loadRooms();
             } else {
                 this.showNotification('离开房间失败', 'error');
@@ -1275,6 +1279,9 @@ class PomodoroApp {
                     <span class="room-status ${this.getRoomStatusClass(room)}">${this.getRoomStatusText(room)}</span>
                 </div>
                 <div class="room-actions">
+                    <button class="btn btn-outline btn-small" onclick="app.viewRoomMembers(${room.id})" title="查看成员">
+                        <i class="fas fa-users"></i>
+                    </button>
                     <button class="btn btn-primary" onclick="app.joinRoomById(${room.id})">
                         加入房间
                     </button>
@@ -1313,7 +1320,10 @@ class PomodoroApp {
                     <span class="room-status ${this.getRoomStatusClass(room)}">${this.getRoomStatusText(room)}</span>
                 </div>
                 <div class="room-actions">
-                    <button class="btn btn-primary" onclick="app.joinRoomById(${room.id})">
+                    <button class="btn btn-outline btn-small" onclick="app.viewRoomMembers(${room.id})" title="查看成员">
+                        <i class="fas fa-users"></i>
+                    </button>
+                    <button class="btn btn-primary" onclick="app.enterRoomById(${room.id})">
                         进入房间
                     </button>
                     <button class="btn btn-danger btn-small" onclick="app.deleteRoom(${room.id})" title="删除房间">
@@ -1349,7 +1359,10 @@ class PomodoroApp {
                     <span class="room-status ${this.getRoomStatusClass(roomMember)}">${this.getRoomStatusText(roomMember)}</span>
                 </div>
                 <div class="room-actions">
-                    <button class="btn btn-primary" onclick="app.joinRoomById(${roomMember.roomId})">
+                    <button class="btn btn-outline btn-small" onclick="app.viewRoomMembers(${roomMember.roomId})" title="查看成员">
+                        <i class="fas fa-users"></i>
+                    </button>
+                    <button class="btn btn-primary" onclick="app.enterRoomById(${roomMember.roomId})">
                         进入房间
                     </button>
                     <button class="btn btn-outline btn-small" onclick="app.leaveMyRoom(${roomMember.roomId})" title="退出房间">
@@ -1405,6 +1418,881 @@ class PomodoroApp {
             joinedTab.classList.add('active');
             joinedCategory.classList.add('active');
         }
+    }
+
+    // 查看房间成员列表
+    async viewRoomMembers(roomId) {
+        try {
+            const response = await this.apiCall(`/room_member/list?roomId=${roomId}`, 'GET');
+            if (response.code === 200) {
+                const members = response.data.records || [];
+                this.showRoomMembersModal(roomId, members);
+            } else {
+                this.showNotification('获取成员列表失败', 'error');
+            }
+        } catch (error) {
+            console.error('获取成员列表失败:', error);
+            this.showNotification('获取成员列表失败', 'error');
+        }
+    }
+
+    // 显示房间成员模态框
+    showRoomMembersModal(roomId, members) {
+        const room = this.allRooms.find(r => r.id === roomId) || 
+                   this.myCreatedRoomsStudy.find(r => r.id === roomId) ||
+                   this.myJoinedRoomsStudy.find(r => r.roomId === roomId);
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.id = 'roomMembersModal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>${room ? room.roomName : '房间'} 成员列表</h3>
+                    <span class="close">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="members-list">
+                        ${members.map(member => `
+                            <div class="member-item">
+                                <div class="member-avatar">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                                <div class="member-info">
+                                    <div class="member-name">${member.username || '用户' + member.userId}</div>
+                                    <div class="member-role">${member.role === 'creator' ? '房主' : '成员'}</div>
+                                </div>
+                                <div class="member-stats">
+                                    <span>学习时长: ${member.studyTime || 0}分钟</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" onclick="app.enterRoomById(${roomId})">
+                        进入房间
+                    </button>
+                    <button class="btn btn-outline" onclick="app.closeRoomMembersModal()">
+                        关闭
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        modal.style.display = 'flex';
+        
+        // 绑定关闭事件
+        modal.querySelector('.close').addEventListener('click', () => {
+            this.closeRoomMembersModal();
+        });
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                this.closeRoomMembersModal();
+            }
+        });
+    }
+
+    // 关闭房间成员模态框
+    closeRoomMembersModal() {
+        const modal = document.getElementById('roomMembersModal');
+        if (modal) {
+            modal.remove();
+        }
+    }
+
+    // 进入房间（已加入的房间）
+    async enterRoomById(roomId) {
+        try {
+            const response = await this.apiCall(`/room/${roomId}`, 'GET');
+            if (response.code === 200) {
+                this.currentRoom = response.data;
+                this.showRoomDashboard();
+                this.showNotification('已进入房间', 'success');
+            } else {
+                this.showNotification('进入房间失败', 'error');
+            }
+        } catch (error) {
+            console.error('进入房间失败:', error);
+            this.showNotification('进入房间失败', 'error');
+        }
+    }
+
+    // 显示房间仪表板
+    showRoomDashboard() {
+        // 切换到房间仪表板页面
+        this.showPage('room-dashboard');
+        this.loadRoomDashboard();
+    }
+
+    // 加载房间仪表板数据
+    async loadRoomDashboard() {
+        if (!this.currentRoom) return;
+
+        // 更新房间信息
+        this.updateRoomInfo();
+        
+        // 加载排行榜
+        await this.loadRoomRanking();
+        
+        // 加载成就系统
+        await this.loadRoomAchievements();
+        
+        // 绑定倒计时器事件
+        this.bindRoomTimerEvents();
+        
+        // 绑定房间仪表板离开房间按钮事件
+        this.bindRoomDashboardEvents();
+    }
+
+    // 更新房间信息
+    updateRoomInfo() {
+        if (!this.currentRoom) return;
+
+        document.getElementById('room-dashboard-title').textContent = this.currentRoom.roomName;
+        document.getElementById('room-name').textContent = this.currentRoom.roomName;
+        document.getElementById('room-members-count').textContent = `成员: ${this.currentRoom.currentMembers}/${this.currentRoom.maxMembers}`;
+        document.getElementById('room-theme').textContent = `主题: ${this.currentRoom.studyTheme || '无'}`;
+        document.getElementById('room-status').textContent = `状态: ${this.getRoomStatusText(this.currentRoom)}`;
+    }
+
+    // 加载房间排行榜
+    async loadRoomRanking() {
+        try {
+            const response = await this.apiCall(`/room_member/list?roomId=${this.currentRoom.id}`, 'GET');
+            if (response.code === 200) {
+                const members = response.data.records || [];
+                this.renderRoomRanking(members);
+            }
+        } catch (error) {
+            console.error('加载排行榜失败:', error);
+        }
+    }
+
+    // 渲染房间排行榜
+    renderRoomRanking(members) {
+        const rankingList = document.getElementById('ranking-list');
+        if (!rankingList) return;
+
+        // 按学习时长排序
+        const sortedMembers = members.sort((a, b) => (b.studyTime || 0) - (a.studyTime || 0));
+
+        rankingList.innerHTML = sortedMembers.map((member, index) => `
+            <div class="ranking-item">
+                <div class="ranking-position ${index < 3 ? ['first', 'second', 'third'][index] : ''}">
+                    ${index + 1}
+                </div>
+                <div class="ranking-info">
+                    <div class="ranking-name">${member.username || '用户' + member.userId}</div>
+                    <div class="ranking-stats">学习时长: ${member.studyTime || 0}分钟</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // 加载房间成就
+    async loadRoomAchievements() {
+        try {
+            // 模拟成就数据
+            const achievements = [
+                {
+                    id: 1,
+                    name: '学习新手',
+                    description: '完成第一次学习',
+                    icon: 'fas fa-graduation-cap',
+                    unlocked: true
+                },
+                {
+                    id: 2,
+                    name: '专注达人',
+                    description: '连续学习7天',
+                    icon: 'fas fa-fire',
+                    unlocked: true
+                },
+                {
+                    id: 3,
+                    name: '时间管理大师',
+                    description: '累计学习100小时',
+                    icon: 'fas fa-clock',
+                    unlocked: false
+                },
+                {
+                    id: 4,
+                    name: '房间活跃分子',
+                    description: '在房间中学习50小时',
+                    icon: 'fas fa-users',
+                    unlocked: false
+                }
+            ];
+            
+            this.renderRoomAchievements(achievements);
+        } catch (error) {
+            console.error('加载成就失败:', error);
+        }
+    }
+
+    // 渲染房间成就
+    renderRoomAchievements(achievements) {
+        const achievementsList = document.getElementById('achievements-list');
+        if (!achievementsList) return;
+
+        achievementsList.innerHTML = achievements.map(achievement => `
+            <div class="achievement-item ${achievement.unlocked ? 'unlocked' : ''}">
+                <div class="achievement-icon">
+                    <i class="${achievement.icon}"></i>
+                </div>
+                <div class="achievement-name">${achievement.name}</div>
+                <div class="achievement-desc">${achievement.description}</div>
+            </div>
+        `).join('');
+    }
+
+    // 绑定房间倒计时器事件
+    bindRoomTimerEvents() {
+        const startBtn = document.getElementById('startRoomTimer');
+        const pauseBtn = document.getElementById('pauseRoomTimer');
+        const resetBtn = document.getElementById('resetRoomTimer');
+        if (startBtn) {
+            startBtn.addEventListener('click', () => {
+                this.startRoomTimer();
+            });
+        }
+
+        if (pauseBtn) {
+            pauseBtn.addEventListener('click', () => {
+                this.pauseRoomTimer();
+            });
+        }
+
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                this.resetRoomTimer();
+            });
+        }
+    }
+
+    // 绑定房间仪表板事件
+    bindRoomDashboardEvents() {
+        const leaveBtn = document.getElementById('leaveRoomDashboardBtn');
+        if (leaveBtn) {
+            leaveBtn.addEventListener('click', () => {
+                this.leaveRoom();
+            });
+        }
+    }
+
+    // 房间倒计时器功能
+    startRoomTimer() {
+        if (this.roomTimerInterval) return;
+
+        this.roomTimerDuration = 25 * 60; // 25分钟
+        this.roomTimerInterval = setInterval(() => {
+            this.roomTimerDuration--;
+            this.updateRoomTimerDisplay();
+            
+            if (this.roomTimerDuration <= 0) {
+                this.completeRoomTimer();
+            }
+        }, 1000);
+
+        this.updateRoomTimerButtons(true);
+        this.updateRoomTimerStatus('学习中...');
+    }
+
+    pauseRoomTimer() {
+        if (this.roomTimerInterval) {
+            clearInterval(this.roomTimerInterval);
+            this.roomTimerInterval = null;
+            this.updateRoomTimerButtons(false);
+            this.updateRoomTimerStatus('已暂停');
+        }
+    }
+
+    resetRoomTimer() {
+        if (this.roomTimerInterval) {
+            clearInterval(this.roomTimerInterval);
+            this.roomTimerInterval = null;
+        }
+        
+        this.roomTimerDuration = 25 * 60;
+        this.updateRoomTimerDisplay();
+        this.updateRoomTimerButtons(false);
+        this.updateRoomTimerStatus('准备开始');
+    }
+
+    completeRoomTimer() {
+        if (this.roomTimerInterval) {
+            clearInterval(this.roomTimerInterval);
+            this.roomTimerInterval = null;
+        }
+        
+        this.updateRoomTimerButtons(false);
+        this.updateRoomTimerStatus('学习完成！');
+        this.showNotification('恭喜！完成一次专注学习', 'success');
+        
+        // 更新学习统计
+        this.updateTodayFocusTime();
+    }
+
+    updateRoomTimerDisplay() {
+        const timerElement = document.getElementById('room-timer');
+        if (timerElement) {
+            const minutes = Math.floor(this.roomTimerDuration / 60);
+            const seconds = this.roomTimerDuration % 60;
+            timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+    }
+
+    updateRoomTimerStatus(status) {
+        const statusElement = document.getElementById('room-timer-status');
+        if (statusElement) {
+            statusElement.textContent = status;
+        }
+    }
+
+    updateRoomTimerButtons(isRunning) {
+        const startBtn = document.getElementById('startRoomTimer');
+        const pauseBtn = document.getElementById('pauseRoomTimer');
+        
+        if (startBtn) startBtn.disabled = isRunning;
+        if (pauseBtn) pauseBtn.disabled = !isRunning;
+    }
+
+
+    // ==================== 音乐播放器功能 ====================
+
+    // 初始化音乐播放器
+    initMusicPlayer() {
+        this.musicPlayer = {
+            audio: null,
+            currentTrack: 0,
+            isPlaying: false,
+            isCollapsed: false,
+            isListExpanded: false,
+            volume: 0.5,
+            tracks: [
+                { name: '读书声', artist: '环境音效', file: 'music/book.mp3' },
+                { name: '篝火声', artist: '环境音效', file: 'music/fire.mp3' },
+                { name: '雨声', artist: '环境音效', file: 'music/rain.mp3' },
+                { name: '仓库声', artist: '环境音效', file: 'music/ware.mp3' }
+            ]
+        };
+
+        this.bindMusicPlayerEvents();
+        this.scanMusicFiles();
+        this.renderMusicList();
+        this.updateMusicInfo();
+    }
+
+    // 扫描music文件夹中的MP3文件
+    async scanMusicFiles() {
+        try {
+            // 尝试获取music文件夹中的文件列表
+            const response = await fetch('/music/');
+            if (response.ok) {
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const links = doc.querySelectorAll('a[href$=".mp3"]');
+                
+                const foundFiles = Array.from(links).map(link => {
+                    const filename = link.getAttribute('href');
+                    const name = filename.replace('.mp3', '').replace('music/', '');
+                    return {
+                        name: this.formatMusicName(name),
+                        artist: '环境音效',
+                        file: filename
+                    };
+                });
+                
+                if (foundFiles.length > 0) {
+                    this.musicPlayer.tracks = foundFiles;
+                    console.log('发现音乐文件:', foundFiles);
+                }
+            }
+        } catch (error) {
+            console.log('无法扫描music文件夹，使用默认音乐列表');
+        }
+    }
+
+    // 格式化音乐名称
+    formatMusicName(filename) {
+        const nameMap = {
+            'book': '读书声',
+            'fire': '篝火声',
+            'rain': '雨声',
+            'ware': '仓库声'
+        };
+        return nameMap[filename] || filename;
+    }
+
+    // 绑定音乐播放器事件
+    bindMusicPlayerEvents() {
+        // 收缩/展开按钮
+        const toggleBtn = document.getElementById('musicPlayerToggle');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => {
+                this.toggleMusicPlayer();
+            });
+        }
+
+        // 关闭按钮
+        const closeBtn = document.getElementById('musicPlayerClose');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                this.closeMusicPlayer();
+            });
+        }
+
+        // 播放/暂停按钮
+        const playPauseBtn = document.getElementById('playPauseMusic');
+        if (playPauseBtn) {
+            playPauseBtn.addEventListener('click', () => {
+                this.togglePlayPause();
+            });
+        }
+
+        // 上一首按钮
+        const prevBtn = document.getElementById('prevMusic');
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                this.previousTrack();
+            });
+        }
+
+        // 下一首按钮
+        const nextBtn = document.getElementById('nextMusic');
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                this.nextTrack();
+            });
+        }
+
+        // 音量滑块
+        const volumeSlider = document.getElementById('volumeSlider');
+        if (volumeSlider) {
+            volumeSlider.addEventListener('input', (e) => {
+                this.setVolume(e.target.value / 100);
+            });
+        }
+
+        // 进度条点击
+        const progressBar = document.querySelector('.progress-bar');
+        if (progressBar) {
+            progressBar.addEventListener('click', (e) => {
+                this.seekTo(e);
+            });
+        }
+
+        // 播放列表切换
+        const toggleListBtn = document.getElementById('toggleMusicList');
+        if (toggleListBtn) {
+            toggleListBtn.addEventListener('click', () => {
+                this.toggleMusicList();
+            });
+        }
+
+        // 拖拽功能
+        this.makeMusicPlayerDraggable();
+    }
+
+    // 使音乐播放器可拖拽
+    makeMusicPlayerDraggable() {
+        const player = document.getElementById('musicPlayer');
+        const header = document.querySelector('.music-player-header');
+        
+        if (!player || !header) return;
+
+        let isDragging = false;
+        let startX, startY, startLeft, startTop;
+
+        // 确保播放器有初始位置
+        if (!player.style.left && !player.style.top) {
+            player.style.position = 'fixed';
+            player.style.left = '20px';
+            player.style.top = '20px';
+        }
+
+        header.addEventListener('mousedown', (e) => {
+            // 检查是否点击了按钮
+            if (e.target.closest('button')) return;
+            
+            e.preventDefault();
+            isDragging = true;
+            
+            startX = e.clientX;
+            startY = e.clientY;
+            
+            // 获取当前位置
+            const rect = player.getBoundingClientRect();
+            startLeft = rect.left;
+            startTop = rect.top;
+            
+            // 设置样式
+            player.style.position = 'fixed';
+            player.style.left = startLeft + 'px';
+            player.style.top = startTop + 'px';
+            player.style.cursor = 'grabbing';
+            
+            // 添加事件监听器
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        });
+
+        const handleMouseMove = (e) => {
+            if (!isDragging) return;
+            
+            e.preventDefault();
+            
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+            
+            const newLeft = startLeft + deltaX;
+            const newTop = startTop + deltaY;
+            
+            // 边界检查
+            const maxLeft = window.innerWidth - player.offsetWidth;
+            const maxTop = window.innerHeight - player.offsetHeight;
+            
+            player.style.left = Math.max(0, Math.min(newLeft, maxLeft)) + 'px';
+            player.style.top = Math.max(0, Math.min(newTop, maxTop)) + 'px';
+        };
+
+        const handleMouseUp = () => {
+            if (!isDragging) return;
+            
+            isDragging = false;
+            player.style.cursor = 'default';
+            
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+    }
+
+    // 切换播放器收缩/展开
+    toggleMusicPlayer() {
+        const player = document.getElementById('musicPlayer');
+        const toggleIcon = document.querySelector('#musicPlayerToggle i');
+        
+        if (!player || !toggleIcon) return;
+
+        this.musicPlayer.isCollapsed = !this.musicPlayer.isCollapsed;
+        
+        if (this.musicPlayer.isCollapsed) {
+            player.classList.add('collapsed');
+            toggleIcon.className = 'fas fa-plus';
+            console.log('音乐播放器已收缩');
+            
+            // 为收缩状态添加点击展开功能
+            this.addCollapsedClickHandler();
+        } else {
+            player.classList.remove('collapsed');
+            toggleIcon.className = 'fas fa-minus';
+            console.log('音乐播放器已展开');
+            
+            // 移除收缩状态的点击事件
+            this.removeCollapsedClickHandler();
+        }
+    }
+
+    // 添加收缩状态点击展开功能
+    addCollapsedClickHandler() {
+        const player = document.getElementById('musicPlayer');
+        if (!player) return;
+
+        // 移除之前的事件监听器（如果存在）
+        this.removeCollapsedClickHandler();
+
+        // 添加新的点击事件监听器
+        this.collapsedClickHandler = (e) => {
+            // 如果点击的不是按钮，则展开播放器
+            if (!e.target.closest('button')) {
+                this.toggleMusicPlayer();
+            }
+        };
+
+        player.addEventListener('click', this.collapsedClickHandler);
+    }
+
+    // 移除收缩状态点击事件
+    removeCollapsedClickHandler() {
+        const player = document.getElementById('musicPlayer');
+        if (!player || !this.collapsedClickHandler) return;
+
+        player.removeEventListener('click', this.collapsedClickHandler);
+        this.collapsedClickHandler = null;
+    }
+
+    // 关闭音乐播放器
+    closeMusicPlayer() {
+        const player = document.getElementById('musicPlayer');
+        if (player) {
+            player.style.display = 'none';
+        }
+        
+        if (this.musicPlayer.audio) {
+            this.musicPlayer.audio.pause();
+            this.musicPlayer.audio = null;
+        }
+    }
+
+    // 切换播放/暂停
+    togglePlayPause() {
+        console.log('切换播放/暂停，当前状态:', this.musicPlayer.isPlaying);
+        
+        if (!this.musicPlayer.audio) {
+            console.log('没有音频对象，加载当前曲目');
+            this.loadCurrentTrack();
+            return;
+        }
+
+        if (this.musicPlayer.isPlaying) {
+            console.log('当前正在播放，执行暂停');
+            this.pauseMusic();
+        } else {
+            console.log('当前已暂停，执行播放');
+            this.playMusic();
+        }
+    }
+
+    // 播放音乐
+    playMusic() {
+        if (!this.musicPlayer.audio) {
+            console.log('没有音频对象，无法播放');
+            return;
+        }
+
+        console.log('开始播放音乐');
+        this.musicPlayer.audio.play().then(() => {
+            this.musicPlayer.isPlaying = true;
+            this.updatePlayButton();
+            console.log('播放成功，状态已更新');
+        }).catch(error => {
+            console.error('播放失败:', error);
+            this.musicPlayer.isPlaying = false;
+            this.updatePlayButton();
+            this.showNotification('播放失败，请检查音频文件', 'error');
+        });
+    }
+
+    // 暂停音乐
+    pauseMusic() {
+        if (!this.musicPlayer.audio) {
+            console.log('没有音频对象，无法暂停');
+            return;
+        }
+
+        console.log('暂停音乐');
+        this.musicPlayer.audio.pause();
+        this.musicPlayer.isPlaying = false;
+        this.updatePlayButton();
+        console.log('暂停成功，状态已更新');
+    }
+
+    // 加载当前曲目
+    loadCurrentTrack() {
+        const track = this.musicPlayer.tracks[this.musicPlayer.currentTrack];
+        if (!track) return;
+
+        // 停止当前播放的音频
+        if (this.musicPlayer.audio) {
+            this.musicPlayer.audio.pause();
+            this.musicPlayer.audio = null;
+        }
+
+        this.musicPlayer.audio = new Audio(track.file);
+        this.musicPlayer.audio.volume = this.musicPlayer.volume;
+        
+        this.musicPlayer.audio.addEventListener('loadedmetadata', () => {
+            this.updateTimeDisplay();
+        });
+
+        this.musicPlayer.audio.addEventListener('timeupdate', () => {
+            this.updateProgress();
+        });
+
+        this.musicPlayer.audio.addEventListener('ended', () => {
+            this.nextTrack();
+        });
+
+        this.musicPlayer.audio.addEventListener('error', (e) => {
+            console.error('音频加载失败:', e);
+            this.showNotification('音频文件加载失败', 'error');
+        });
+
+        this.updateMusicInfo();
+        this.updatePlayButton();
+    }
+
+    // 上一首
+    previousTrack() {
+        console.log('切换到上一首');
+        // 先停止当前播放
+        if (this.musicPlayer.audio && this.musicPlayer.isPlaying) {
+            this.musicPlayer.audio.pause();
+        }
+        
+        this.musicPlayer.currentTrack = (this.musicPlayer.currentTrack - 1 + this.musicPlayer.tracks.length) % this.musicPlayer.tracks.length;
+        this.musicPlayer.isPlaying = false; // 切换歌曲后默认暂停
+        this.loadCurrentTrack();
+        this.updateMusicList();
+    }
+
+    // 下一首
+    nextTrack() {
+        console.log('切换到下一首');
+        // 先停止当前播放
+        if (this.musicPlayer.audio && this.musicPlayer.isPlaying) {
+            this.musicPlayer.audio.pause();
+        }
+        
+        this.musicPlayer.currentTrack = (this.musicPlayer.currentTrack + 1) % this.musicPlayer.tracks.length;
+        this.musicPlayer.isPlaying = false; // 切换歌曲后默认暂停
+        this.loadCurrentTrack();
+        this.updateMusicList();
+    }
+
+    // 设置音量
+    setVolume(volume) {
+        this.musicPlayer.volume = volume;
+        if (this.musicPlayer.audio) {
+            this.musicPlayer.audio.volume = volume;
+        }
+    }
+
+    // 跳转到指定位置
+    seekTo(event) {
+        if (!this.musicPlayer.audio) return;
+
+        const progressBar = event.currentTarget;
+        const rect = progressBar.getBoundingClientRect();
+        const clickX = event.clientX - rect.left;
+        const percentage = clickX / rect.width;
+        const newTime = percentage * this.musicPlayer.audio.duration;
+        
+        this.musicPlayer.audio.currentTime = newTime;
+    }
+
+    // 切换播放列表显示
+    toggleMusicList() {
+        const listContent = document.getElementById('musicListContent');
+        const toggleIcon = document.querySelector('#toggleMusicList i');
+        
+        if (!listContent) return;
+
+        this.musicPlayer.isListExpanded = !this.musicPlayer.isListExpanded;
+        
+        if (this.musicPlayer.isListExpanded) {
+            listContent.classList.add('show');
+            toggleIcon.className = 'fas fa-chevron-up';
+        } else {
+            listContent.classList.remove('show');
+            toggleIcon.className = 'fas fa-chevron-down';
+        }
+    }
+
+    // 渲染音乐列表
+    renderMusicList() {
+        const listContent = document.getElementById('musicListContent');
+        if (!listContent) return;
+
+        listContent.innerHTML = this.musicPlayer.tracks.map((track, index) => `
+            <div class="music-item ${index === this.musicPlayer.currentTrack ? 'active' : ''}" 
+                 onclick="app.selectTrack(${index})">
+                <i class="fas fa-music"></i>
+                <span>${track.name}</span>
+            </div>
+        `).join('');
+    }
+
+    // 选择曲目
+    selectTrack(index) {
+        console.log('选择曲目:', index);
+        // 先停止当前播放
+        if (this.musicPlayer.audio && this.musicPlayer.isPlaying) {
+            this.musicPlayer.audio.pause();
+        }
+        
+        this.musicPlayer.currentTrack = index;
+        this.musicPlayer.isPlaying = false; // 切换歌曲后默认暂停
+        this.loadCurrentTrack();
+        this.updateMusicList();
+    }
+
+    // 更新音乐信息
+    updateMusicInfo() {
+        const track = this.musicPlayer.tracks[this.musicPlayer.currentTrack];
+        if (!track) return;
+
+        const nameElement = document.getElementById('currentMusicName');
+        const artistElement = document.getElementById('currentMusicArtist');
+        
+        if (nameElement) nameElement.textContent = track.name;
+        if (artistElement) artistElement.textContent = track.artist;
+    }
+
+    // 更新播放按钮
+    updatePlayButton() {
+        const playIcon = document.querySelector('#playPauseMusic i');
+        if (!playIcon) return;
+
+        if (this.musicPlayer.isPlaying) {
+            playIcon.className = 'fas fa-pause';
+        } else {
+            playIcon.className = 'fas fa-play';
+        }
+    }
+
+    // 更新进度条
+    updateProgress() {
+        if (!this.musicPlayer.audio) return;
+
+        const progressFill = document.getElementById('musicProgressFill');
+        if (progressFill) {
+            const percentage = (this.musicPlayer.audio.currentTime / this.musicPlayer.audio.duration) * 100;
+            progressFill.style.width = percentage + '%';
+        }
+
+        this.updateTimeDisplay();
+    }
+
+    // 更新时间显示
+    updateTimeDisplay() {
+        if (!this.musicPlayer.audio) return;
+
+        const currentTimeElement = document.getElementById('currentTime');
+        const totalTimeElement = document.getElementById('totalTime');
+        
+        if (currentTimeElement) {
+            currentTimeElement.textContent = this.formatTime(this.musicPlayer.audio.currentTime);
+        }
+        
+        if (totalTimeElement) {
+            totalTimeElement.textContent = this.formatTime(this.musicPlayer.audio.duration);
+        }
+    }
+
+    // 格式化时间
+    formatTime(seconds) {
+        if (isNaN(seconds)) return '0:00';
+        
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // 更新音乐列表高亮
+    updateMusicList() {
+        const items = document.querySelectorAll('.music-item');
+        items.forEach((item, index) => {
+            if (index === this.musicPlayer.currentTrack) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
     }
 
     // ==================== 学习统计功能 ====================

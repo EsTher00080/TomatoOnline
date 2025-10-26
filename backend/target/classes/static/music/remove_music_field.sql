@@ -5,3 +5,4 @@ ALTER TABLE room DROP COLUMN current_music;
 
 
 
+

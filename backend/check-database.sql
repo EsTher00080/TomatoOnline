@@ -14,3 +14,4 @@ ALTER TABLE room DROP COLUMN IF EXISTS current_music;
 
 
 
+
