@@ -43,3 +43,4 @@ SELECT COUNT(*) as user_count FROM user;
 --     KEY `idx_status` (`status`),
 --     KEY `idx_create_time` (`create_time`)
 -- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
+

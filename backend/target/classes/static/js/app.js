@@ -30,6 +30,7 @@ class PomodoroApp {
         this.loadTasks();
         this.updateTimerDisplay();
         this.loadCustomTextOnInit();
+        this.updateDashboardStats();
     }
 
     bindEvents() {
@@ -46,90 +47,151 @@ class PomodoroApp {
         });
 
         // 番茄钟控制
-        document.getElementById('startBtn').addEventListener('click', () => {
-            this.startTimer();
-        });
+        const startBtn = document.getElementById('startBtn');
+        if (startBtn) {
+            startBtn.addEventListener('click', () => {
+                this.startTimer();
+            });
+        }
 
-        document.getElementById('pauseBtn').addEventListener('click', () => {
-            this.pauseTimer();
-        });
+        const pauseBtn = document.getElementById('pauseBtn');
+        if (pauseBtn) {
+            pauseBtn.addEventListener('click', () => {
+                this.pauseTimer();
+            });
+        }
 
-        document.getElementById('resetBtn').addEventListener('click', () => {
-            this.resetTimer();
-        });
+        const resetBtn = document.getElementById('resetBtn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                this.resetTimer();
+            });
+        }
 
         // 任务管理
-        document.getElementById('addTaskBtn').addEventListener('click', () => {
-            this.showAddTaskModal();
-        });
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        if (addTaskBtn) {
+            addTaskBtn.addEventListener('click', () => {
+                this.showAddTaskModal();
+            });
+        }
 
-        document.getElementById('addTaskForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.handleAddTask(e.target);
-        });
+        const addTaskForm = document.getElementById('addTaskForm');
+        if (addTaskForm) {
+            addTaskForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.handleAddTask(e.target);
+            });
+        }
 
-        document.getElementById('filterAll').addEventListener('click', () => {
-            this.setFilter('all');
-        });
+        const filterAll = document.getElementById('filterAll');
+        if (filterAll) {
+            filterAll.addEventListener('click', () => {
+                this.setFilter('all');
+            });
+        }
 
-        document.getElementById('filterPending').addEventListener('click', () => {
-            this.setFilter('pending');
-        });
+        const filterPending = document.getElementById('filterPending');
+        if (filterPending) {
+            filterPending.addEventListener('click', () => {
+                this.setFilter('pending');
+            });
+        }
 
-        document.getElementById('filterCompleted').addEventListener('click', () => {
-            this.setFilter('completed');
-        });
+        const filterCompleted = document.getElementById('filterCompleted');
+        if (filterCompleted) {
+            filterCompleted.addEventListener('click', () => {
+                this.setFilter('completed');
+            });
+        }
+
+        const filterInProgress = document.getElementById('filterInProgress');
+        if (filterInProgress) {
+            filterInProgress.addEventListener('click', () => {
+                this.setFilter('in-progress');
+            });
+        }
 
         // 自习室相关事件
-        document.getElementById('createRoomBtn').addEventListener('click', () => {
-            this.showCreateRoomModal();
-        });
+        const createRoomBtn = document.getElementById('createRoomBtn');
+        if (createRoomBtn) {
+            createRoomBtn.addEventListener('click', () => {
+                this.showCreateRoomModal();
+            });
+        }
 
-        document.getElementById('createRoomForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.handleCreateRoom(e.target);
-        });
+        const createRoomForm = document.getElementById('createRoomForm');
+        if (createRoomForm) {
+            createRoomForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.handleCreateRoom(e.target);
+            });
+        }
 
-        document.getElementById('joinRoomForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.handleJoinRoom(e.target);
-        });
+        const joinRoomForm = document.getElementById('joinRoomForm');
+        if (joinRoomForm) {
+            joinRoomForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.handleJoinRoom(e.target);
+            });
+        }
 
-        document.getElementById('startStudyBtn').addEventListener('click', () => {
-            this.startStudy();
-        });
+        const startStudyBtn = document.getElementById('startStudyBtn');
+        if (startStudyBtn) {
+            startStudyBtn.addEventListener('click', () => {
+                this.startStudy();
+            });
+        }
 
-        document.getElementById('endStudyBtn').addEventListener('click', () => {
-            this.endStudy();
-        });
+        const endStudyBtn = document.getElementById('endStudyBtn');
+        if (endStudyBtn) {
+            endStudyBtn.addEventListener('click', () => {
+                this.endStudy();
+            });
+        }
 
-        document.getElementById('leaveRoomBtn').addEventListener('click', () => {
-            this.leaveRoom();
-        });
+        const leaveRoomBtn = document.getElementById('leaveRoomBtn');
+        if (leaveRoomBtn) {
+            leaveRoomBtn.addEventListener('click', () => {
+                this.leaveRoom();
+            });
+        }
 
         // 房间类型切换
-        document.getElementById('roomType').addEventListener('change', (e) => {
-            const passwordField = document.getElementById('roomPassword');
-            if (e.target.value === '3') {
-                passwordField.style.display = 'block';
-            } else {
-                passwordField.style.display = 'none';
-            }
-        });
+        const roomType = document.getElementById('roomType');
+        if (roomType) {
+            roomType.addEventListener('change', (e) => {
+                const passwordGroup = document.getElementById('passwordGroup');
+                if (e.target.value === '3') {
+                    passwordGroup.style.display = 'block';
+                } else {
+                    passwordGroup.style.display = 'none';
+                }
+            });
+        }
 
         // 自定义文案相关事件
-        document.getElementById('customizeTextBtn').addEventListener('click', () => {
-            this.showCustomizeTextModal();
-        });
+        const customizeTextBtn = document.getElementById('customizeTextBtn');
+        if (customizeTextBtn) {
+            customizeTextBtn.addEventListener('click', () => {
+                this.showCustomizeTextModal();
+            });
+        }
 
-        document.getElementById('customizeTextForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.handleCustomText(e.target);
-        });
+        const customizeTextForm = document.getElementById('customizeTextForm');
+        if (customizeTextForm) {
+            customizeTextForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.handleCustomText(e.target);
+            });
+        }
 
-        document.getElementById('resetTextBtn').addEventListener('click', () => {
-            this.resetCustomText();
-        });
+        const resetTextBtn = document.getElementById('resetTextBtn');
+        if (resetTextBtn) {
+            resetTextBtn.addEventListener('click', () => {
+                this.resetCustomText();
+            });
+        }
 
         // 登录注册相关事件
         const loginBtn = document.getElementById('loginBtn');
@@ -143,8 +205,10 @@ class PomodoroApp {
         console.log('注册表单:', registerForm);
         
         if (loginBtn) {
-            loginBtn.addEventListener('click', () => {
+            loginBtn.addEventListener('click', (e) => {
+                e.preventDefault();
                 console.log('登录按钮被点击');
+                alert('登录按钮被点击！'); // 临时测试
                 this.showLoginModal();
             });
         } else {
@@ -152,8 +216,10 @@ class PomodoroApp {
         }
 
         if (registerBtn) {
-            registerBtn.addEventListener('click', () => {
+            registerBtn.addEventListener('click', (e) => {
+                e.preventDefault();
                 console.log('注册按钮被点击');
+                alert('注册按钮被点击！'); // 临时测试
                 this.showRegisterModal();
             });
         } else {
@@ -205,6 +271,28 @@ class PomodoroApp {
             }
             if (e.target.id === 'registerModal') {
                 this.hideRegisterModal();
+            }
+            if (e.target.id === 'addTaskModal') {
+                this.hideAddTaskModal();
+            }
+            if (e.target.id === 'createRoomModal') {
+                this.hideCreateRoomModal();
+            }
+            if (e.target.id === 'joinRoomModal') {
+                this.hideJoinRoomModal();
+            }
+            if (e.target.id === 'customizeTextModal') {
+                this.hideCustomizeTextModal();
+            }
+        });
+
+        // 通用模态框关闭按钮事件
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('close')) {
+                const modal = e.target.closest('.modal');
+                if (modal) {
+                    modal.style.display = 'none';
+                }
             }
         });
     }
@@ -277,6 +365,7 @@ class PomodoroApp {
             this.isBreak = true;
             this.timeLeft = this.sessionCount % 4 === 0 ? this.longBreakTime : this.breakTime;
             this.showNotification('工作完成！开始休息时间', 'success');
+            this.updateTodayFocusTime();
         } else {
             this.isBreak = false;
             this.timeLeft = 25 * 60;
@@ -286,6 +375,13 @@ class PomodoroApp {
         this.updateTimerDisplay();
         document.getElementById('startBtn').style.display = 'inline-block';
         document.getElementById('pauseBtn').style.display = 'none';
+    }
+
+    // 更新今日专注时长
+    updateTodayFocusTime() {
+        const todayFocus = parseInt(localStorage.getItem('todayFocus') || '0') + 25;
+        localStorage.setItem('todayFocus', todayFocus.toString());
+        this.updateDashboardStats();
     }
 
     updateTimerDisplay() {
@@ -329,11 +425,12 @@ class PomodoroApp {
         }
 
         tasksList.innerHTML = filteredTasks.map(task => `
-            <div class="task-item ${task.status === 'completed' ? 'completed' : ''}">
+            <div class="task-item ${task.status === 'completed' ? 'completed' : task.status === 'in_progress' ? 'in-progress' : ''}">
                 <div class="task-content">
                     <h4>${task.taskName}</h4>
                     <p>${task.description || '暂无描述'}</p>
                     <div class="task-meta">
+                        <span class="status status-${task.status}">${this.getStatusText(task.status)}</span>
                         <span class="priority priority-${task.priority}">${this.getPriorityText(task.priority)}</span>
                         <span class="category">${task.category || '未分类'}</span>
                         <span class="duration">预计 ${task.plannedDuration} 分钟</span>
@@ -343,6 +440,9 @@ class PomodoroApp {
                     ${task.status === 'pending' ? `
                         <button class="btn btn-primary btn-small" onclick="app.startTask(${task.id})">开始</button>
                         <button class="btn btn-success btn-small" onclick="app.completeTask(${task.id})">完成</button>
+                    ` : task.status === 'in_progress' ? `
+                        <button class="btn btn-success btn-small" onclick="app.completeTask(${task.id})">完成</button>
+                        <button class="btn btn-secondary btn-small" onclick="app.pauseTask(${task.id})">暂停</button>
                     ` : ''}
                     <button class="btn btn-danger btn-small" onclick="app.deleteTask(${task.id})">删除</button>
                 </div>
@@ -354,6 +454,8 @@ class PomodoroApp {
         switch (this.currentFilter) {
             case 'pending':
                 return this.tasks.filter(task => task.status === 'pending');
+            case 'in-progress':
+                return this.tasks.filter(task => task.status === 'in_progress');
             case 'completed':
                 return this.tasks.filter(task => task.status === 'completed');
             default:
@@ -422,12 +524,28 @@ class PomodoroApp {
         }
     }
 
+    async pauseTask(taskId) {
+        try {
+            const response = await this.apiCall(`/pomodoro_task/pause/${taskId}`, 'POST');
+            if (response.code === 200) {
+                this.showNotification('任务已暂停', 'info');
+                this.loadTasks();
+            } else {
+                this.showNotification('暂停任务失败', 'error');
+            }
+        } catch (error) {
+            console.error('暂停任务失败:', error);
+            this.showNotification('暂停任务失败', 'error');
+        }
+    }
+
     async completeTask(taskId) {
         try {
             const response = await this.apiCall(`/pomodoro_task/complete/${taskId}`, 'POST');
             if (response.code === 200) {
                 this.showNotification('任务已完成', 'success');
                 this.loadTasks();
+                this.updateTodayTasksCount();
             } else {
                 this.showNotification('完成任务失败', 'error');
             }
@@ -435,6 +553,13 @@ class PomodoroApp {
             console.error('完成任务失败:', error);
             this.showNotification('完成任务失败', 'error');
         }
+    }
+
+    // 更新今日完成任务数
+    updateTodayTasksCount() {
+        const todayTasks = parseInt(localStorage.getItem('todayTasks') || '0') + 1;
+        localStorage.setItem('todayTasks', todayTasks.toString());
+        this.updateDashboardStats();
     }
 
     async deleteTask(taskId) {
@@ -470,6 +595,15 @@ class PomodoroApp {
             2: 'completed'
         };
         return statuses[status] || 'pending';
+    }
+
+    getStatusText(status) {
+        const statusTexts = {
+            'pending': '待开始',
+            'in_progress': '进行中',
+            'completed': '已完成'
+        };
+        return statusTexts[status] || '未知';
     }
 
     // ==================== 自习室功能 ====================
@@ -630,9 +764,29 @@ class PomodoroApp {
 
     showCurrentRoom() {
         // 显示当前房间信息
-        const currentRoomInfo = document.getElementById('current-room-info');
+        const currentRoomInfo = document.getElementById('current-room-section');
         if (currentRoomInfo) {
             currentRoomInfo.style.display = 'block';
+            this.updateRoomInfo();
+        }
+    }
+
+    // 更新房间信息显示
+    updateRoomInfo() {
+        if (this.currentRoom) {
+            const roomNameElement = document.getElementById('current-room-name');
+            const membersCountElement = document.getElementById('room-members-count');
+            const studyTimeElement = document.getElementById('room-study-time');
+            
+            if (roomNameElement) {
+                roomNameElement.textContent = this.currentRoom.roomName;
+            }
+            if (membersCountElement) {
+                membersCountElement.textContent = `成员: ${this.currentRoom.currentMembers}/${this.currentRoom.maxMembers}`;
+            }
+            if (studyTimeElement) {
+                studyTimeElement.textContent = `学习时长: ${this.studyDuration}分钟`;
+            }
         }
     }
 
@@ -715,6 +869,7 @@ class PomodoroApp {
                 this.studyStartTime = new Date();
                 this.showNotification('开始学习', 'success');
                 this.loadRoomRanking();
+                this.updateRoomInfo();
             } else {
                 this.showNotification('开始学习失败', 'error');
             }
@@ -738,9 +893,14 @@ class PomodoroApp {
 
             if (response.code === 200) {
                 this.isStudying = false;
+                if (this.studyStartTime) {
+                    const studyDuration = Math.floor((new Date() - this.studyStartTime) / 60000);
+                    this.studyDuration += studyDuration;
+                }
                 this.studyStartTime = null;
                 this.showNotification('结束学习', 'info');
                 this.loadRoomRanking();
+                this.updateRoomInfo();
             } else {
                 this.showNotification('结束学习失败', 'error');
             }
@@ -845,6 +1005,30 @@ class PomodoroApp {
         const customText = JSON.parse(localStorage.getItem('customText') || '{}');
         if (customText.title || customText.subtitle || customText.color) {
             this.updateHeroText(customText);
+        }
+    }
+
+    // 更新首页统计数据
+    updateDashboardStats() {
+        // 更新今日专注时长
+        const todayFocusElement = document.getElementById('today-focus');
+        if (todayFocusElement) {
+            const todayFocus = localStorage.getItem('todayFocus') || '0';
+            todayFocusElement.textContent = todayFocus;
+        }
+
+        // 更新今日完成任务数
+        const todayTasksElement = document.getElementById('today-tasks');
+        if (todayTasksElement) {
+            const todayTasks = localStorage.getItem('todayTasks') || '0';
+            todayTasksElement.textContent = todayTasks;
+        }
+
+        // 更新连续学习天数
+        const streakDaysElement = document.getElementById('streak-days');
+        if (streakDaysElement) {
+            const streakDays = localStorage.getItem('streakDays') || '0';
+            streakDaysElement.textContent = streakDays;
         }
     }
 
@@ -1045,5 +1229,9 @@ class PomodoroApp {
     }
 }
 
-// 初始化应用
-const app = new PomodoroApp();
+// 初始化应用 - 等待DOM加载完成
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM加载完成，初始化应用...');
+    window.app = new PomodoroApp();
+    console.log('应用初始化完成，app对象已创建');
+});

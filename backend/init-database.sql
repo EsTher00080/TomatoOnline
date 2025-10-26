@@ -36,3 +36,4 @@ INSERT INTO `user` (`username`, `password`, `email`, `avatar`, `signature`, `con
 
 -- 5. 验证数据插入
 SELECT * FROM user;
+

@@ -1,0 +1,128 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.0)
+
+2025-10-26 17:37:42.223 [main] INFO  c.example.pomodorostudy.PomodoroStudyApplication - Starting PomodoroStudyApplication v1.0.0 using Java 22.0.1 with PID 21424 (D:\IDEAprogram files\TomatoOnline\backend\target\pomodoro-study-1.0.0.jar started by EsThe in D:\IDEAprogram files\TomatoOnline\backend)
+2025-10-26 17:37:42.227 [main] DEBUG c.example.pomodorostudy.PomodoroStudyApplication - Running with Spring Boot v3.2.0, Spring v6.1.1
+2025-10-26 17:37:42.227 [main] INFO  c.example.pomodorostudy.PomodoroStudyApplication - The following 1 profile is active: "dev"
+2025-10-26 17:37:44.324 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+2025-10-26 17:37:44.335 [main] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2025-10-26 17:37:44.335 [main] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
+2025-10-26 17:37:44.401 [main] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-10-26 17:37:44.402 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 2106 ms
+Logging initialized using 'class org.apache.ibatis.logging.stdout.StdOutImpl' adapter.
+2025-10-26 17:37:44.823 [main] DEBUG c.b.m.e.spring.MybatisSqlSessionFactoryBean - Registered plugin: 'com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor@3086f480'
+2025-10-26 17:37:45.078 [main] DEBUG c.b.m.e.spring.MybatisSqlSessionFactoryBean - Parsed mapper file: 'class path resource [mapper/AchievementMapper.xml]'
+2025-10-26 17:37:45.103 [main] DEBUG c.b.m.e.spring.MybatisSqlSessionFactoryBean - Parsed mapper file: 'class path resource [mapper/PomodoroTaskMapper.xml]'
+2025-10-26 17:37:45.124 [main] DEBUG c.b.m.e.spring.MybatisSqlSessionFactoryBean - Parsed mapper file: 'class path resource [mapper/RankRecordMapper.xml]'
+2025-10-26 17:37:45.144 [main] DEBUG c.b.m.e.spring.MybatisSqlSessionFactoryBean - Parsed mapper file: 'class path resource [mapper/RoomMapper.xml]'
+2025-10-26 17:37:45.164 [main] DEBUG c.b.m.e.spring.MybatisSqlSessionFactoryBean - Parsed mapper file: 'class path resource [mapper/RoomMemberMapper.xml]'
+2025-10-26 17:37:45.188 [main] DEBUG c.b.m.e.spring.MybatisSqlSessionFactoryBean - Parsed mapper file: 'class path resource [mapper/StudyLogMapper.xml]'
+2025-10-26 17:37:45.199 [main] DEBUG c.b.m.e.spring.MybatisSqlSessionFactoryBean - Parsed mapper file: 'class path resource [mapper/UserMapper.xml]'
+Initialization Sequence datacenterId:1 workerId:6
+2025-10-26 17:37:45.400 [main] INFO  o.s.b.a.web.servlet.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+2025-10-26 17:37:45.977 [main] INFO  o.s.b.actuate.endpoint.web.EndpointLinksResolver - Exposing 1 endpoint(s) beneath base path '/actuator'
+2025-10-26 17:37:46.083 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path ''
+2025-10-26 17:37:46.093 [main] INFO  c.example.pomodorostudy.PomodoroStudyApplication - Started PomodoroStudyApplication in 4.427 seconds (process running for 5.168)
+2025-10-26 17:37:46.171 [main] DEBUG c.b.mybatisplus.autoconfigure.DdlApplicationRunner -   ...  DDL start create  ...  
+2025-10-26 17:37:46.173 [main] DEBUG c.b.mybatisplus.autoconfigure.DdlApplicationRunner -   ...  DDL end create  ...  
+=================================
+? ∑¨«—◊‘œ∞ “”¶”√∆Ù∂Ø≥…π¶£°
+? ‘⁄œﬂ◊‘¬…—ßœ∞∆ΩÃ®
+? ∑√Œ µÿ÷∑: http://localhost:8080/api
+? APIŒƒµµ: http://localhost:8080/api/doc
+=================================
+2025-10-26 17:42:57.806 [http-nio-8080-exec-1] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-10-26 17:42:57.812 [http-nio-8080-exec-1] INFO  org.springframework.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-10-26 17:42:57.813 [http-nio-8080-exec-1] INFO  org.springframework.web.servlet.DispatcherServlet - Completed initialization in 1 ms
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@1d94bd6] was not registered for synchronization because synchronization is not active
+2025-10-26 17:42:58.061 [http-nio-8080-exec-4] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-10-26 17:42:58.437 [http-nio-8080-exec-4] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@92c6e80
+2025-10-26 17:42:58.441 [http-nio-8080-exec-4] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+JDBC Connection [HikariProxyConnection@1632271158 wrapping com.mysql.cj.jdbc.ConnectionImpl@92c6e80] will not be managed by Spring
+==>  Preparing: SELECT COUNT(*) AS total FROM pomodoro_task
+==> Parameters: 
+<==    Columns: total
+<==        Row: 3
+<==      Total: 1
+==>  Preparing: SELECT id,user_id,task_name,description,planned_duration,actual_duration,status,priority,category,start_time,end_time,create_time,update_time FROM pomodoro_task ORDER BY create_time DESC LIMIT ?
+==> Parameters: 10(Long)
+<==    Columns: id, user_id, task_name, description, planned_duration, actual_duration, status, priority, category, start_time, end_time, create_time, update_time
+<==        Row: 1, 1, —ßœ∞, <<BLOB>>, 25, 0, 1, 2, —ßœ∞, 2025-10-24 05:21:25, null, null, null
+<==        Row: 2, 1, –¥◊˜“µ, <<BLOB>>, 30, 0, 0, 2, —ßœ∞, null, null, null, null
+<==        Row: 3, 1, ø¥ È, <<BLOB>>, 25, 0, 2, 2, —ßœ∞, 2025-10-24 06:32:07, 2025-10-24 06:32:08, null, null
+<==      Total: 3
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@1d94bd6]
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@cfc214d] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@435020460 wrapping com.mysql.cj.jdbc.ConnectionImpl@92c6e80] will not be managed by Spring
+==>  Preparing: DELETE FROM pomodoro_task WHERE id=?
+==> Parameters: 1(Long)
+<==    Updates: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@cfc214d]
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3f5c07f9] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@1331000736 wrapping com.mysql.cj.jdbc.ConnectionImpl@92c6e80] will not be managed by Spring
+==>  Preparing: SELECT COUNT(*) AS total FROM pomodoro_task
+==> Parameters: 
+<==    Columns: total
+<==        Row: 2
+<==      Total: 1
+==>  Preparing: SELECT id,user_id,task_name,description,planned_duration,actual_duration,status,priority,category,start_time,end_time,create_time,update_time FROM pomodoro_task ORDER BY create_time DESC LIMIT ?
+==> Parameters: 10(Long)
+<==    Columns: id, user_id, task_name, description, planned_duration, actual_duration, status, priority, category, start_time, end_time, create_time, update_time
+<==        Row: 3, 1, ø¥ È, <<BLOB>>, 25, 0, 2, 2, —ßœ∞, 2025-10-24 06:32:07, 2025-10-24 06:32:08, null, null
+<==        Row: 2, 1, –¥◊˜“µ, <<BLOB>>, 30, 0, 0, 2, —ßœ∞, null, null, null, null
+<==      Total: 2
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3f5c07f9]
+2025-10-26 17:43:10.198 [http-nio-8080-exec-8] WARN  o.s.w.s.m.support.DefaultHandlerExceptionResolver - Resolved [org.springframework.http.converter.HttpMessageNotReadableException: JSON parse error: Cannot deserialize value of type `java.lang.Integer` from String "pending": not a valid `java.lang.Integer` value]
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@105b5e88] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@1179082969 wrapping com.mysql.cj.jdbc.ConnectionImpl@92c6e80] will not be managed by Spring
+==>  Preparing: SELECT COUNT(*) AS total FROM room
+==> Parameters: 
+<==    Columns: total
+<==        Row: 9
+<==      Total: 1
+==>  Preparing: SELECT id,room_name,creator_id,description,max_members,current_members,room_type,password,status,study_theme,background_music,create_time,update_time FROM room ORDER BY create_time DESC LIMIT ?
+==> Parameters: 10(Long)
+<==    Columns: id, room_name, creator_id, description, max_members, current_members, room_type, password, status, study_theme, background_music, create_time, update_time
+<==        Row: 1, ◊‘œ∞ “1, 1, <<BLOB>>, 20, 2, 1, , 1, ±‡≥Ã, null, null, null
+<==        Row: 2, –›œ–◊‘œ∞ “, 1, <<BLOB>>, 20, 0, 1, , 1, ”È¿÷–›œ–, null, null, null
+<==        Row: 3, –›œ–◊‘œ∞ “, 1, <<BLOB>>, 20, 0, 1, , 1, ”È¿÷–›œ–, null, null, null
+<==        Row: 4, –›œ–◊‘œ∞ “, 1, <<BLOB>>, 20, 1, 1, , 1, ”È¿÷–›œ–, null, null, null
+<==        Row: 5, –›œ–◊‘œ∞ “, 1, <<BLOB>>, 20, 1, 1, , 1, ”È¿÷–›œ–, null, null, null
+<==        Row: 6, ◊‘œ∞ “1, 1, <<BLOB>>, 20, 1, 1, , 1, , null, null, null
+<==        Row: 7, –›œ–◊‘œ∞ “, 1, <<BLOB>>, 20, 1, 1, , 1, , null, null, null
+<==        Row: 8, Test Room, 1, <<BLOB>>, 10, 1, 1, null, 1, Study, null, null, null
+<==        Row: 9, –›œ–◊‘œ∞ “, 1, <<BLOB>>, 20, 1, 1, , 1, , null, null, null
+<==      Total: 9
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@105b5e88]
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@220c2891] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@1377306532 wrapping com.mysql.cj.jdbc.ConnectionImpl@92c6e80] will not be managed by Spring
+==>  Preparing: SELECT COUNT(*) AS total FROM room
+==> Parameters: 
+<==    Columns: total
+<==        Row: 9
+<==      Total: 1
+==>  Preparing: SELECT id,room_name,creator_id,description,max_members,current_members,room_type,password,status,study_theme,background_music,create_time,update_time FROM room ORDER BY create_time DESC LIMIT ?
+==> Parameters: 10(Long)
+<==    Columns: id, room_name, creator_id, description, max_members, current_members, room_type, password, status, study_theme, background_music, create_time, update_time
+<==        Row: 1, ◊‘œ∞ “1, 1, <<BLOB>>, 20, 2, 1, , 1, ±‡≥Ã, null, null, null
+<==        Row: 2, –›œ–◊‘œ∞ “, 1, <<BLOB>>, 20, 0, 1, , 1, ”È¿÷–›œ–, null, null, null
+<==        Row: 3, –›œ–◊‘œ∞ “, 1, <<BLOB>>, 20, 0, 1, , 1, ”È¿÷–›œ–, null, null, null
+<==        Row: 4, –›œ–◊‘œ∞ “, 1, <<BLOB>>, 20, 1, 1, , 1, ”È¿÷–›œ–, null, null, null
+<==        Row: 5, –›œ–◊‘œ∞ “, 1, <<BLOB>>, 20, 1, 1, , 1, ”È¿÷–›œ–, null, null, null
+<==        Row: 6, ◊‘œ∞ “1, 1, <<BLOB>>, 20, 1, 1, , 1, , null, null, null
+<==        Row: 7, –›œ–◊‘œ∞ “, 1, <<BLOB>>, 20, 1, 1, , 1, , null, null, null
+<==        Row: 8, Test Room, 1, <<BLOB>>, 10, 1, 1, null, 1, Study, null, null, null
+<==        Row: 9, –›œ–◊‘œ∞ “, 1, <<BLOB>>, 20, 1, 1, , 1, , null, null, null
+<==      Total: 9
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@220c2891]

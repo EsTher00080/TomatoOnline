@@ -12,3 +12,4 @@ AND COLUMN_NAME = 'current_music';
 ALTER TABLE room DROP COLUMN IF EXISTS current_music;
 
 
+

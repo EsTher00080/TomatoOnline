@@ -18,3 +18,4 @@ signature = VALUES(signature);
 
 -- 验证数据
 SELECT id, username, email, status, create_time FROM user;
+

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简单测试页面</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { padding: 10px 20px; margin: 10px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        #output { background: #f5f5f5; padding: 15px; margin: 10px 0; border-radius: 4px; min-height: 100px; }
+    </style>
+</head>
+<body>
+    <h1>JavaScript 事件测试</h1>
+    
+    <button id="testBtn">测试按钮</button>
+    <button id="loginBtn">登录按钮</button>
+    <button id="registerBtn">注册按钮</button>
+    
+    <div id="output"></div>
+    
+    <script>
+        // 输出函数
+        function log(message) {
+            const output = document.getElementById('output');
+            const time = new Date().toLocaleTimeString();
+            output.innerHTML += `[${time}] ${message}<br>`;
+            console.log(message);
+        }
+        
+        // 页面加载完成
+        document.addEventListener('DOMContentLoaded', function() {
+            log('页面加载完成');
+            
+            // 测试按钮
+            const testBtn = document.getElementById('testBtn');
+            if (testBtn) {
+                testBtn.addEventListener('click', function() {
+                    log('测试按钮被点击');
+                    alert('测试按钮工作正常！');
+                });
+            } else {
+                log('错误：测试按钮未找到');
+            }
+            
+            // 登录按钮
+            const loginBtn = document.getElementById('loginBtn');
+            if (loginBtn) {
+                loginBtn.addEventListener('click', function() {
+                    log('登录按钮被点击');
+                    alert('登录按钮工作正常！');
+                });
+            } else {
+                log('错误：登录按钮未找到');
+            }
+            
+            // 注册按钮
+            const registerBtn = document.getElementById('registerBtn');
+            if (registerBtn) {
+                registerBtn.addEventListener('click', function() {
+                    log('注册按钮被点击');
+                    alert('注册按钮工作正常！');
+                });
+            } else {
+                log('错误：注册按钮未找到');
+            }
+            
+            log('事件绑定完成');
+        });
+    </script>
+</body>
+</html>

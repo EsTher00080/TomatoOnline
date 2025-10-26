@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前端事件测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #console-output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .log-info { color: #4EC9B0; }
+        .log-success { color: #4CAF50; }
+        .log-warning { color: #FFC107; }
+        .log-error { color: #f44336; }
+    </style>
+</head>
+<body>
+    <h1>前端事件绑定测试页面</h1>
+    
+    <div class="test-section">
+        <h2>测试1: JavaScript 事件监听器</h2>
+        <button id="testBtn1" onclick="testOnClick1()">测试 onclick 属性</button>
+        <button id="testBtn2">测试 addEventListener</button>
+        <button id="testBtn3">测试全局点击监听</button>
+    </div>
+
+    <div class="test-section">
+        <h2>测试2: 检查 DOM 元素</h2>
+        <button id="checkElements">检查登录按钮</button>
+        <button id="checkScripts">检查脚本加载</button>
+    </div>
+
+    <div class="test-section">
+        <h2>控制台输出</h2>
+        <div id="console-output"></div>
+    </div>
+
+    <script>
+        // 重写 console.log 以在页面显示
+        const originalLog = console.log;
+        const originalError = console.error;
+        const output = document.getElementById('console-output');
+
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'log-error' : type === 'warning' ? 'log-warning' : type === 'success' ? 'log-success' : 'log-info';
+            output.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addLog(args.join(' '), 'info');
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addLog(args.join(' '), 'error');
+        };
+
+        // 测试函数
+        function testOnClick1() {
+            console.log('✅ onclick 属性事件触发成功');
+        }
+
+        // 页面加载完成后执行
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 页面加载完成');
+            
+            // 测试 addEventListener
+            document.getElementById('testBtn2').addEventListener('click', function() {
+                console.log('✅ addEventListener 事件触发成功');
+            });
+
+            // 全局点击监听
+            document.getElementById('testBtn3').addEventListener('click', function() {
+                console.log('✅ 全局点击监听触发成功');
+            });
+
+            // 检查登录按钮
+            document.getElementById('checkElements').addEventListener('click', function() {
+                console.log('🔍 开始检查登录按钮...');
+                const loginBtn = document.getElementById('loginBtn');
+                const registerBtn = document.getElementById('registerBtn');
+                const loginModal = document.getElementById('loginModal');
+                const registerModal = document.getElementById('registerModal');
+
+                if (loginBtn) {
+                    console.log('✅ 找到登录按钮 (id=loginBtn)');
+                    console.log('   按钮类型:', loginBtn.type);
+                    console.log('   按钮文本:', loginBtn.textContent);
+                    console.log('   是否有事件监听:', loginBtn.onclick !== null || loginBtn.getAttribute('onclick') !== null);
+                } else {
+                    console.log('❌ 未找到登录按钮 (id=loginBtn)');
+                }
+
+                if (registerBtn) {
+                    console.log('✅ 找到注册按钮 (id=registerBtn)');
+                } else {
+                    console.log('❌ 未找到注册按钮 (id=registerBtn)');
+                }
+
+                if (loginModal) {
+                    console.log('✅ 找到登录模态框 (id=loginModal)');
+                } else {
+                    console.log('❌ 未找到登录模态框 (id=loginModal)');
+                }
+
+                if (registerModal) {
+                    console.log('✅ 找到注册模态框 (id=registerModal)');
+                } else {
+                    console.log('❌ 未找到注册模态框 (id=registerModal)');
+                }
+            });
+
+            // 检查脚本加载
+            document.getElementById('checkScripts').addEventListener('click', function() {
+                console.log('🔍 开始检查脚本加载...');
+                const scripts = document.querySelectorAll('script[src]');
+                console.log('   找到 ' + scripts.length + ' 个外部脚本:');
+                scripts.forEach((script, index) => {
+                    console.log(`   ${index + 1}. ${script.src}`);
+                    console.log(`      加载状态: ${script.readyState || '未知'}`);
+                });
+
+                // 检查 app.js
+                if (typeof app !== 'undefined') {
+                    console.log('✅ app 对象已定义');
+                    console.log('   app 类型:', typeof app);
+                } else {
+                    console.log('❌ app 对象未定义');
+                }
+            });
+
+            // 全局点击监听器
+            document.addEventListener('click', function(e) {
+                console.log('📍 全局点击监听器触发');
+                console.log('   目标元素:', e.target);
+                console.log('   元素 ID:', e.target.id);
+                console.log('   元素标签:', e.target.tagName);
+                console.log('   元素类名:', e.target.className);
+            });
+
+            console.log('✅ 测试页面初始化完成');
+        });
+    </script>
+</body>
+</html>
