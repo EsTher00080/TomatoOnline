@@ -11,3 +11,6 @@ out/
 
 # VSCode 配置
 .vscode/
+
+# Node.js 依赖包
+node_modules
