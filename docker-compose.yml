@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: pomodoro_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: EsTher-00080
+      MYSQL_DATABASE: pomodoro_study_db
+      MYSQL_USER: pomodoro
+      MYSQL_PASSWORD: pomodoro123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/init-database.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - pomodoro_network
+
+  backend:
+    build: ./backend
+    container_name: pomodoro_backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/pomodoro_study_db?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: EsTher-00080
+    depends_on:
+      - mysql
+    networks:
+      - pomodoro_network
+
+  frontend:
+    build: ./frontend
+    container_name: pomodoro_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - pomodoro_network
+
+volumes:
+  mysql_data:
+
+networks:
+  pomodoro_network:
+    driver: bridge

@@ -17,3 +17,14 @@ node_modules
 
 # macOS 系统文件
 .DS_Store
+
+# Docker 相关
+.env
+docker-compose.override.yml
+
+# Maven 构建产物
+target/
+
+# 日志文件
+logs/
+*.log

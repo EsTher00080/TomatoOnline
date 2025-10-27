@@ -88,6 +88,57 @@
    
    打开浏览器访问：http://localhost:8080
 
+### 🐳 Docker 部署 (推荐)
+
+项目已完全Docker化，支持一键部署。
+
+#### 环境要求
+- **Docker Desktop** (Windows/Mac)
+- **Docker Compose**
+
+#### 一键启动
+
+**Windows:**
+```bash
+# 启动后端服务
+.\scripts\start-backend.bat
+
+# 启动前端服务  
+.\scripts\start-frontend.bat
+
+# 停止所有服务
+.\scripts\stop-windows.bat
+```
+
+**macOS:**
+```bash
+# 启动所有服务
+./scripts/start-macos.sh
+
+# 停止所有服务
+./scripts/stop-macos.sh
+```
+
+#### 手动部署
+```bash
+# 构建并启动所有服务
+docker-compose up --build -d
+
+# 查看服务状态
+docker-compose ps
+
+# 查看日志
+docker-compose logs -f
+
+# 停止服务
+docker-compose down
+```
+
+#### 访问地址
+- **前端应用**: http://localhost
+- **后端API**: http://localhost:8080
+- **数据库**: localhost:3306 (root/EsTher-00080)
+
 ## 📁 项目结构
 
 ```
