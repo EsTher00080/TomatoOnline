@@ -100,6 +100,10 @@
 
 **Windows:**
 ```bash
+# 启动所有服务（推荐）
+.\scripts\start-all.bat
+
+# 或者分别启动
 # 启动后端服务
 .\scripts\start-backend.bat
 
@@ -112,6 +116,10 @@
 
 **macOS:**
 ```bash
+# 启动所有服务（推荐）
+./scripts/start-all.sh
+
+# 或者分别启动
 # 启动所有服务
 ./scripts/start-macos.sh
 

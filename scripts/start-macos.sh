@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# TomatoOnline 一键启动脚本 (macOS)
-# 使用Docker Compose启动整个应用
+# TomatoOnline 一键启动完整服务脚本 (macOS)
+# 使用Docker Compose启动所有服务
 
-echo "🍅 TomatoOnline 一键启动脚本 (macOS)"
+echo "🍅 TomatoOnline 一键启动完整服务脚本 (macOS)"
 echo "======================================"
 
 # 检查Docker是否安装
@@ -30,10 +30,10 @@ echo "✅ Docker 环境检查通过"
 # 进入项目根目录
 cd "$(dirname "$0")/.."
 
-echo "📦 构建并启动服务..."
+echo "📦 构建并启动所有服务..."
 echo "这可能需要几分钟时间，请耐心等待..."
 
-# 使用docker-compose启动服务
+# 使用docker-compose启动所有服务
 if command -v docker-compose &> /dev/null; then
     docker-compose up --build -d
 else
@@ -42,7 +42,7 @@ fi
 
 if [ $? -eq 0 ]; then
     echo ""
-    echo "🎉 启动成功！"
+    echo "🎉 所有服务启动成功！"
     echo "======================================"
     echo "前端访问地址: http://localhost"
     echo "后端API地址: http://localhost:8080"
@@ -50,6 +50,8 @@ if [ $? -eq 0 ]; then
     echo ""
     echo "停止服务: ./scripts/stop-macos.sh"
     echo "查看日志: docker-compose logs -f"
+    echo "查看后端日志: docker-compose logs -f backend"
+    echo "查看前端日志: docker-compose logs -f frontend"
 else
     echo "❌ 启动失败，请检查错误信息"
     exit 1
