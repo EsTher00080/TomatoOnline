@@ -14,3 +14,6 @@ out/
 
 # Node.js 依赖包
 node_modules
+
+# macOS 系统文件
+.DS_Store
